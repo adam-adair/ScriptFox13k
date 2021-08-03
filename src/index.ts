@@ -1,4 +1,4 @@
-import { perspective } from "./camera";
+import { perspective, orthogonal } from "./camera";
 import { Red } from "./colors";
 import { Cube } from "./cube";
 
@@ -38,14 +38,28 @@ gl.enable(gl.DEPTH_TEST);
 
 //set light, camera uniforms
 const camera = gl.getUniformLocation(program, "camera");
-const cameraMatrix = perspective(30, ratio, 1, 100);
-cameraMatrix.translateSelf(0, 0, -5);
-gl.uniformMatrix4fv(camera, false, cameraMatrix.toFloat32Array());
+let cameraMatrix: DOMMatrix;
+const zoom = 10;
+let currentView = "c";
+
 const light = gl.getUniformLocation(program, "light");
 gl.uniform3f(light, 0.1, 1.1, 0.1);
 const ambientLight = gl.getUniformLocation(program, "ambientLight");
 const aL = 0.35;
 gl.uniform3f(ambientLight, aL, aL, aL);
+
+const setCamera = () => {
+  if (currentView === "p") {
+    cameraMatrix = orthogonal(zoom * ratio, zoom, 100);
+    cameraMatrix.translateSelf((zoom * ratio) / 2, -zoom / 2, -zoom);
+    currentView = "c";
+  } else {
+    cameraMatrix = perspective(zoom, ratio, 1, 100);
+    cameraMatrix.translateSelf(0, 0, -zoom * 2);
+    currentView = "p";
+  }
+  gl.uniformMatrix4fv(camera, false, cameraMatrix.toFloat32Array());
+};
 
 //set up some stupid objects
 const cube = new Cube(0.3, Red);
@@ -54,6 +68,7 @@ const meshes = [cube, cube2];
 const player = meshes[0];
 player.translate(1, 1, 1);
 let inp = "";
+setCamera();
 
 //game loop
 const loop = () => {
@@ -78,8 +93,29 @@ const loop = () => {
     case "e":
       player.translate(0, 0, -m);
       break;
-    case "c":
+    case "q":
       player.translate(0, 0, m);
+      break;
+    case "r":
+      player.rotate(0, 0, -m * 50);
+      break;
+    case "f":
+      player.rotate(0, 0, m * 50);
+      break;
+    case "t":
+      player.rotate(0, -m * 50, 0);
+      break;
+    case "g":
+      player.rotate(0, m * 50, 0);
+      break;
+    case "y":
+      player.rotate(-m * 50, 0, 0);
+      break;
+    case "h":
+      player.rotate(m * 50, 0, 0);
+      break;
+    case "x":
+      setCamera();
       break;
   }
   inp = "";
