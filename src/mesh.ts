@@ -1,4 +1,33 @@
-import { Color } from "./colors";
+import { Color, White } from "./colors";
+
+class Matrix extends DOMMatrix {
+  transposeSelf() {
+    let temp;
+    temp = this.m12;
+    this.m12 = this.m21;
+    this.m21 = temp;
+
+    temp = this.m13;
+    this.m13 = this.m31;
+    this.m31 = temp;
+
+    temp = this.m14;
+    this.m14 = this.m41;
+    this.m41 = temp;
+
+    temp = this.m23;
+    this.m23 = this.m32;
+    this.m32 = temp;
+
+    temp = this.m24;
+    this.m24 = this.m42;
+    this.m42 = temp;
+
+    temp = this.m34;
+    this.m34 = this.m43;
+    this.m43 = temp;
+  }
+}
 
 export class Vertex {
   x: number;
@@ -35,12 +64,7 @@ export class Face {
   vB: Vertex;
   vC: Vertex;
   color: Color;
-  constructor(
-    vA: Vertex,
-    vB: Vertex,
-    vC: Vertex,
-    color: Color = new Color(1, 0, 0)
-  ) {
+  constructor(vA: Vertex, vB: Vertex, vC: Vertex, color: Color = White) {
     this.vA = vA;
     this.vB = vB;
     this.vC = vC;
@@ -52,12 +76,14 @@ export class Mesh {
   vertices: Vertex[];
   faces: Face[];
   vbuffer: Float32Array;
-  matrix: DOMMatrix;
+  matrix: Matrix;
+  nMatrix: Matrix;
   constructor(vertices: Vertex[], faces: Face[]) {
     this.vertices = vertices;
     this.faces = faces;
     this.vbuffer = this.vbo();
-    this.matrix = new DOMMatrix();
+    this.matrix = new Matrix();
+    this.nMatrix = new Matrix();
   }
 
   vbo = (): Float32Array => {
@@ -73,4 +99,20 @@ export class Mesh {
     }
     return new Float32Array(arr);
   };
+
+  rotate(x: number, y: number, z: number): void {
+    this.matrix.rotateSelf(x, y, z);
+    this.recomputeNormals();
+  }
+
+  translate(x: number, y: number, z: number): void {
+    this.matrix.translateSelf(x, y, z);
+    this.recomputeNormals();
+  }
+
+  recomputeNormals() {
+    this.nMatrix = new Matrix(this.matrix.toString());
+    this.nMatrix.invertSelf();
+    this.nMatrix.transposeSelf();
+  }
 }

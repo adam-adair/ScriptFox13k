@@ -3,11 +3,15 @@ attribute vec4 color;
 attribute vec4 normal;
 uniform mat4 camera;
 uniform mat4 model;
-uniform vec4 light;
+uniform mat4 nMatrix;
+uniform vec3 light;
+uniform vec3 ambientLight;
 varying vec4 v_color;
 void main() {
   gl_Position = camera * model * position;
-  vec4 normalPosition = normal;//model * normal;
-  float nDotL = max(dot(light, normalize(normalPosition)), 0.0);
-  v_color = color * nDotL;
+  vec4 v_normal = normalize(nMatrix * normal);
+  float nDotL = max(dot(light, v_normal.xyz), 0.0);
+  vec3 ambient = ambientLight * color.rgb;
+  vec3 diffuse = color.rgb * nDotL;
+  v_color = vec4(diffuse + ambient, 1.0);
 }
