@@ -1,6 +1,6 @@
 import { Color, White } from "./colors";
 
-class Matrix extends DOMMatrix {
+export class Matrix extends DOMMatrix {
   transposeSelf() {
     let temp;
     temp = this.m12;
@@ -74,16 +74,20 @@ export class Face {
 
 export class Mesh {
   vertices: Vertex[];
+  position: Vertex;
+  rotation: Vertex;
   faces: Face[];
   vbuffer: Float32Array;
-  matrix: Matrix;
-  nMatrix: Matrix;
+  pMatrix: Matrix;
+  rMatrix: Matrix;
   constructor(vertices: Vertex[], faces: Face[]) {
     this.vertices = vertices;
     this.faces = faces;
     this.vbuffer = this.vbo();
-    this.matrix = new Matrix();
-    this.nMatrix = new Matrix();
+    this.pMatrix = new Matrix();
+    this.rMatrix = new Matrix();
+    this.position = new Vertex(0, 0, 0);
+    this.rotation = new Vertex(0, 0, 0);
   }
 
   vbo = (): Float32Array => {
@@ -101,18 +105,12 @@ export class Mesh {
   };
 
   rotate(x: number, y: number, z: number): void {
-    this.matrix.rotateSelf(x, y, z);
-    this.recomputeNormals();
+    this.rotation = this.rotation.subtract(new Vertex(-x, -y, -z));
+    this.rMatrix.rotateSelf(x, y, z);
   }
 
   translate(x: number, y: number, z: number): void {
-    this.matrix.translateSelf(x, y, z);
-    this.recomputeNormals();
-  }
-
-  recomputeNormals() {
-    this.nMatrix = new Matrix(this.matrix.toString());
-    this.nMatrix.invertSelf();
-    this.nMatrix.transposeSelf();
+    this.position = this.position.subtract(new Vertex(-x, -y, -z));
+    this.pMatrix.translateSelf(x, y, z);
   }
 }
