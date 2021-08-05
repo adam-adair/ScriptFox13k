@@ -32,7 +32,6 @@ let meshes: Mesh[];
 let landscape: LandscapeSquare[] = [];
 let inp = "";
 let lastRowHeights = [];
-let modelColorPositionBuffer: WebGLBuffer;
 let enemy: Mesh;
 let player: Mesh;
 
@@ -61,6 +60,7 @@ const init = () => {
 
   //set background color, enable depth
   gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.enable(gl.DEPTH_TEST);
 
   //set light, camera uniforms
@@ -121,7 +121,26 @@ const init = () => {
 
   meshes = [enemy, player, ...landscape];
 
-  //initialize camera and input
+  for (let i = 0; i < meshes.length; i++) {
+    const mesh = meshes[i];
+    mesh.gl_buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.gl_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, mesh.vb_arr, gl.STATIC_DRAW);
+    const FSIZE = mesh.vb_arr.BYTES_PER_ELEMENT;
+
+    const position = gl.getAttribLocation(program, "position");
+    gl.vertexAttribPointer(position, 3, gl.FLOAT, false, FSIZE * 9, 0);
+    gl.enableVertexAttribArray(position);
+
+    const color = gl.getAttribLocation(program, "color");
+    gl.vertexAttribPointer(color, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 3);
+    gl.enableVertexAttribArray(color);
+
+    const normal = gl.getAttribLocation(program, "normal");
+    gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 6);
+    gl.enableVertexAttribArray(normal);
+  }
+
   requestAnimationFrame(loop);
 };
 
@@ -140,24 +159,21 @@ const loop = () => {
   for (let i = 0; i < meshes.length; i++) {
     //create gl buffer of vertex positions/colors and bind to object's vbuffer
     const mesh = meshes[i];
+    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.gl_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, mesh.vb_arr, gl.STATIC_DRAW);
 
     //set object's attributes
-    const FSIZE = mesh.vbuffer.BYTES_PER_ELEMENT;
+    const FSIZE = mesh.vb_arr.BYTES_PER_ELEMENT;
 
-    modelColorPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, modelColorPositionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, mesh.vbuffer, gl.STATIC_DRAW);
     const position = gl.getAttribLocation(program, "position");
     gl.vertexAttribPointer(position, 3, gl.FLOAT, false, FSIZE * 9, 0);
-    gl.enableVertexAttribArray(position);
 
     const color = gl.getAttribLocation(program, "color");
     gl.vertexAttribPointer(color, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 3);
-    gl.enableVertexAttribArray(color);
 
     const normal = gl.getAttribLocation(program, "normal");
     gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 6);
-    gl.enableVertexAttribArray(normal);
+
     // Set the model matrix
     const model = gl.getUniformLocation(program, "model");
     const nMatrix = gl.getUniformLocation(program, "nMatrix");

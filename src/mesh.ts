@@ -77,13 +77,14 @@ export class Mesh {
   position: Vertex;
   rotation: Vertex;
   faces: Face[];
-  vbuffer: Float32Array;
+  vb_arr: Float32Array;
   pMatrix: Matrix;
   rMatrix: Matrix;
+  gl_buffer: WebGLBuffer;
   constructor(vertices: Vertex[], faces: Face[]) {
     this.vertices = vertices;
     this.faces = faces;
-    this.vbuffer = this.vbo();
+    this.vb_arr = this.vbo();
     this.pMatrix = new Matrix();
     this.rMatrix = new Matrix();
     this.position = new Vertex(0, 0, 0);
