@@ -94,12 +94,13 @@ export class Mesh {
     const arr = [];
     for (let i = 0; i < this.faces.length; i++) {
       const { vA, vB, vC, color } = this.faces[i];
-      const normal = vA.subtract(vB).cross(vA.subtract(vC));
+      const normalA = vA.subtract(vB).cross(vA.subtract(vC));
       // prettier-ignore
       arr.push(
-        vA.x, vA.y, vA.z, color.r, color.g, color.b, normal.x, normal.y, normal.z,
-        vB.x, vB.y, vB.z, color.r, color.g, color.b, normal.x, normal.y, normal.z,
-        vC.x, vC.y, vC.z, color.r, color.g, color.b, normal.x, normal.y, normal.z)
+        vA.x, vA.y, vA.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z,
+        vB.x, vB.y, vB.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z,
+        vC.x, vC.y, vC.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z
+        )
     }
     return new Float32Array(arr);
   };
