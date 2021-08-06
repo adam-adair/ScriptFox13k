@@ -77,33 +77,66 @@ export class Mesh {
   position: Vertex;
   rotation: Vertex;
   faces: Face[];
-  vb_arr: Float32Array;
   pMatrix: Matrix;
   rMatrix: Matrix;
-  gl_buffer: WebGLBuffer;
+  buffer: WebGLBuffer;
+  vbo: Float32Array;
   constructor(vertices: Vertex[], faces: Face[]) {
     this.vertices = vertices;
     this.faces = faces;
-    this.vb_arr = this.vbo();
     this.pMatrix = new Matrix();
     this.rMatrix = new Matrix();
     this.position = new Vertex(0, 0, 0);
     this.rotation = new Vertex(0, 0, 0);
   }
 
-  vbo = (): Float32Array => {
-    const arr = [];
-    for (let i = 0; i < this.faces.length; i++) {
-      const { vA, vB, vC, color } = this.faces[i];
-      const normalA = vA.subtract(vB).cross(vA.subtract(vC));
-      // prettier-ignore
-      arr.push(
-        vA.x, vA.y, vA.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z,
-        vB.x, vB.y, vB.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z,
-        vC.x, vC.y, vC.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z
-        )
+  draw = (gl: WebGLRenderingContext, program: WebGLProgram): void => {
+    //if vbo doesn't exist, create it and fill with polygon info
+    if (!this.vbo) {
+      const arr = [];
+      for (let i = 0; i < this.faces.length; i++) {
+        const { vA, vB, vC, color } = this.faces[i];
+        const normalA = vA.subtract(vB).cross(vA.subtract(vC));
+        // prettier-ignore
+        arr.push(
+          vA.x, vA.y, vA.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z,
+          vB.x, vB.y, vB.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z,
+          vC.x, vC.y, vC.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z
+          )
+      }
+      this.vbo = new Float32Array(arr);
+      this.buffer = gl.createBuffer();
     }
-    return new Float32Array(arr);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, this.vbo, gl.STATIC_DRAW);
+    const FSIZE = this.vbo.BYTES_PER_ELEMENT;
+
+    const position = gl.getAttribLocation(program, "position");
+    gl.vertexAttribPointer(position, 3, gl.FLOAT, false, FSIZE * 9, 0);
+    gl.enableVertexAttribArray(position);
+
+    const color = gl.getAttribLocation(program, "color");
+    gl.vertexAttribPointer(color, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 3);
+    gl.enableVertexAttribArray(color);
+
+    const normal = gl.getAttribLocation(program, "normal");
+    gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 6);
+    gl.enableVertexAttribArray(normal);
+
+    // Set the model matrix
+    const model = gl.getUniformLocation(program, "model");
+    const nMatrix = gl.getUniformLocation(program, "nMatrix");
+
+    const modelMatrix = this.pMatrix.multiply(this.rMatrix);
+    const normalMatrix = new Matrix(modelMatrix.toString());
+    normalMatrix.invertSelf();
+    normalMatrix.transposeSelf();
+
+    gl.uniformMatrix4fv(model, false, modelMatrix.toFloat32Array());
+    gl.uniformMatrix4fv(nMatrix, false, normalMatrix.toFloat32Array());
+
+    gl.drawArrays(gl.TRIANGLES, 0, this.faces.length * 3);
   };
 
   rotate(x: number, y: number, z: number): void {

@@ -2,7 +2,7 @@ import { perspective, orthogonal } from "./camera";
 import { Red } from "./colors";
 import { Cube } from "./cube";
 import { constants } from "./constants";
-import { Matrix, Mesh } from "./mesh";
+import { Mesh } from "./mesh";
 import { LandscapeSquare, scapeOptions } from "./landscapeSquare";
 import { control } from "./input";
 const {
@@ -16,6 +16,8 @@ const {
   scapeWidth,
   scapeHeight,
   movement,
+  disappearingPoint,
+  scapeY,
 } = constants;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -28,11 +30,9 @@ const fs_source = require("./glsl/fshader.glsl") as string;
 
 let gl: WebGLRenderingContext;
 let program: WebGLProgram;
-let meshes: Mesh[];
 let landscape: LandscapeSquare[] = [];
 let inp = "";
-let lastRowHeights = [];
-let enemy: Mesh;
+let enemies: Mesh[] = [];
 let player: Mesh;
 
 const init = () => {
@@ -85,11 +85,10 @@ const init = () => {
   );
 
   //set up some stupid objects
-  enemy = new Cube(1);
+  enemies.push(new Cube(0.2));
   player = new Cube(0.3, Red);
   player.translate(2, 0, 0);
   player.rotate(45, 45, 45);
-  enemy.rotate(45, 45, 45);
 
   for (let i = 0; i < scapeRows; i++) {
     for (let j = 0; j < scapeCols; j++) {
@@ -97,50 +96,24 @@ const init = () => {
         width: scapeWidth,
         height: scapeHeight,
       };
-      if (i > 0) {
-        const squareInFront = landscape[(i - 1) * scapeCols + j];
-        scapeOptions.fl = squareInFront.bl;
-        scapeOptions.fr = squareInFront.br;
-      }
       if (j > 0) {
-        const squareToLeft = landscape[j - 1 + i * scapeCols];
+        const squareToLeft = landscape[i * scapeCols + (j - 1)];
         scapeOptions.fl = squareToLeft.fr;
         scapeOptions.bl = squareToLeft.br;
       }
-
+      if (i > 0) {
+        const squareInFront = landscape[i * scapeCols + j - scapeCols];
+        scapeOptions.fl = squareInFront.bl;
+        scapeOptions.fr = squareInFront.br;
+      }
+      if (i + j === 0) scapeOptions.color = Red;
       const square = new LandscapeSquare(scapeOptions);
 
-      if (i === scapeRows - 1) {
-        lastRowHeights.push(square.bl, square.br);
-      }
-      square.translate(j * scapeWidth, -2.5, i * scapeWidth);
+      square.translate(j * scapeWidth, scapeY, -i * scapeWidth);
       square.translate(-scapeWidth * scapeCols * 0.5, 0, 0);
       landscape.push(square);
     }
   }
-
-  meshes = [enemy, player, ...landscape];
-
-  for (let i = 0; i < meshes.length; i++) {
-    const mesh = meshes[i];
-    mesh.gl_buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.gl_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, mesh.vb_arr, gl.STATIC_DRAW);
-    const FSIZE = mesh.vb_arr.BYTES_PER_ELEMENT;
-
-    const position = gl.getAttribLocation(program, "position");
-    gl.vertexAttribPointer(position, 3, gl.FLOAT, false, FSIZE * 9, 0);
-    gl.enableVertexAttribArray(position);
-
-    const color = gl.getAttribLocation(program, "color");
-    gl.vertexAttribPointer(color, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 3);
-    gl.enableVertexAttribArray(color);
-
-    const normal = gl.getAttribLocation(program, "normal");
-    gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 6);
-    gl.enableVertexAttribArray(normal);
-  }
-
   requestAnimationFrame(loop);
 };
 
@@ -152,42 +125,50 @@ const loop = () => {
   control(player, inp, movement);
   inp = "";
 
-  //make enemy spin
-  enemy.rotate(0.5, 0.5, 0.5);
-
-  // //for each object
-  for (let i = 0; i < meshes.length; i++) {
-    //create gl buffer of vertex positions/colors and bind to object's vbuffer
-    const mesh = meshes[i];
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.gl_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, mesh.vb_arr, gl.STATIC_DRAW);
-
-    //set object's attributes
-    const FSIZE = mesh.vb_arr.BYTES_PER_ELEMENT;
-
-    const position = gl.getAttribLocation(program, "position");
-    gl.vertexAttribPointer(position, 3, gl.FLOAT, false, FSIZE * 9, 0);
-
-    const color = gl.getAttribLocation(program, "color");
-    gl.vertexAttribPointer(color, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 3);
-
-    const normal = gl.getAttribLocation(program, "normal");
-    gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 6);
-
-    // Set the model matrix
-    const model = gl.getUniformLocation(program, "model");
-    const nMatrix = gl.getUniformLocation(program, "nMatrix");
-
-    const modelMatrix = mesh.pMatrix.multiply(mesh.rMatrix);
-    const normalMatrix = new Matrix(modelMatrix.toString());
-    normalMatrix.invertSelf();
-    normalMatrix.transposeSelf();
-
-    gl.uniformMatrix4fv(model, false, modelMatrix.toFloat32Array());
-    gl.uniformMatrix4fv(nMatrix, false, normalMatrix.toFloat32Array());
-
-    gl.drawArrays(gl.TRIANGLES, 0, mesh.faces.length * 3);
+  //move landscape towards camera
+  for (let i = 0; i < landscape.length; i++) {
+    const square = landscape[i];
+    square.translate(0, 0, scapeSpeed);
+    square.draw(gl, program);
+    //if square has disappeared
+    if (square.position.z > disappearingPoint) {
+      //add squares to the back
+      const lastRow = landscape.slice(-scapeCols);
+      for (let j = 0; j < lastRow.length; j++) {
+        const scapeOptions: scapeOptions = {
+          width: scapeWidth,
+          height: scapeHeight,
+        };
+        const squareInFront = lastRow[j];
+        scapeOptions.fl = squareInFront.bl;
+        scapeOptions.fr = squareInFront.br;
+        if (j > 0) scapeOptions.bl = landscape[landscape.length - 1].br;
+        const newSquare = new LandscapeSquare(scapeOptions);
+        newSquare.translate(
+          j * scapeWidth,
+          -2.5,
+          squareInFront.position.z - scapeWidth
+        );
+        newSquare.translate(-scapeWidth * scapeCols * 0.5, 0, 0);
+        landscape.push(newSquare);
+      }
+      //remove front row square
+      landscape.splice(i, scapeCols);
+    }
   }
+
+  // draw enemies
+  for (let i = 0; i < enemies.length; i++) {
+    //create gl buffer of vertex positions/colors and bind to object's vbuffer
+    const enemy = enemies[i];
+    //make enemy spin
+    enemy.rotate(0.5, 0.5, 0.5);
+    enemy.draw(gl, program);
+  }
+
+  //draw player
+
+  player.draw(gl, program);
   requestAnimationFrame(loop);
 };
 
