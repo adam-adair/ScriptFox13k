@@ -11,4 +11,5 @@ export const constants = {
   scapeY: -2.5,
   movement: 0.1,
   disappearingPoint: 20,
+  fogDistance: [45, 60],
 };

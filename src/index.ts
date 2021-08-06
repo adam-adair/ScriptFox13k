@@ -18,6 +18,7 @@ const {
   movement,
   disappearingPoint,
   scapeY,
+  fogDistance,
 } = constants;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -74,6 +75,7 @@ const init = () => {
 
   gl.uniformMatrix4fv(camera, false, cameraMatrix.toFloat32Array());
 
+  // light
   const light = gl.getUniformLocation(program, "light");
   gl.uniform3f(light, lightDirection.x, lightDirection.y, lightDirection.z);
   const ambientLight = gl.getUniformLocation(program, "ambientLight");
@@ -83,6 +85,18 @@ const init = () => {
     ambientLightAmount,
     ambientLightAmount
   );
+
+  //fog
+  const a_fogColor = new Float32Array([
+    clearColor.r,
+    clearColor.g,
+    clearColor.b,
+  ]);
+  const a_fogDist = new Float32Array(fogDistance);
+  const u_FogColor = gl.getUniformLocation(program, "u_FogColor");
+  const u_FogDist = gl.getUniformLocation(program, "u_FogDist");
+  gl.uniform3fv(u_FogColor, a_fogColor);
+  gl.uniform2fv(u_FogDist, a_fogDist);
 
   //set up some stupid objects
   enemies.push(new Cube(0.2));

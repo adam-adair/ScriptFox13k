@@ -7,6 +7,7 @@ uniform mat4 nMatrix;
 uniform vec3 light;
 uniform vec3 ambientLight;
 varying vec4 v_color;
+varying float v_dist;
 void main() {
   gl_Position = camera * model * position;
   vec4 v_normal = normalize(nMatrix * normal);
@@ -14,4 +15,5 @@ void main() {
   vec3 ambient = ambientLight * color.rgb;
   vec3 diffuse = color.rgb * nDotL;
   v_color = vec4(diffuse + ambient, 1.0);
+  v_dist = gl_Position.w;
 }
