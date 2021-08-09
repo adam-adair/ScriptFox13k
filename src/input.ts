@@ -1,42 +1,37 @@
 import { Mesh } from "./mesh";
 
-export const control = (player: Mesh, inp: string, movement: number) => {
-  switch (inp) {
-    case "d":
-      player.translate(movement, 0, 0);
+export const onkey = (
+  ev: KeyboardEvent,
+  pressed: boolean,
+  inp: { up: boolean; left: boolean; down: boolean; right: boolean }
+) => {
+  switch (ev.key) {
+    case "w":
+      inp.up = pressed;
+      ev.preventDefault();
       break;
     case "a":
-      player.translate(-movement, 0, 0);
-      break;
-    case "w":
-      player.translate(0, movement, 0);
+      inp.left = pressed;
+      ev.preventDefault();
       break;
     case "s":
-      player.translate(0, -movement, 0);
+      inp.down = pressed;
+      ev.preventDefault();
       break;
-    case "e":
-      player.translate(0, 0, -movement);
-      break;
-    case "q":
-      player.translate(0, 0, movement);
-      break;
-    case "r":
-      player.rotate(0, 0, -movement * 50);
-      break;
-    case "f":
-      player.rotate(0, 0, movement * 50);
-      break;
-    case "t":
-      player.rotate(0, -movement * 50, 0);
-      break;
-    case "g":
-      player.rotate(0, movement * 50, 0);
-      break;
-    case "y":
-      player.rotate(-movement * 50, 0, 0);
-      break;
-    case "h":
-      player.rotate(movement * 50, 0, 0);
+    case "d":
+      inp.right = pressed;
+      ev.preventDefault();
       break;
   }
+};
+
+export const movePlayer = (
+  player: Mesh,
+  inp: { up: boolean; left: boolean; down: boolean; right: boolean },
+  movement: number
+) => {
+  if (inp.up) player.translate(0, movement, 0);
+  if (inp.down) player.translate(0, -movement, 0);
+  if (inp.left) player.translate(-movement, 0, 0);
+  if (inp.right) player.translate(movement, 0, 0);
 };

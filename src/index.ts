@@ -4,7 +4,7 @@ import { Cube } from "./cube";
 import { constants } from "./constants";
 import { Mesh } from "./mesh";
 import { LandscapeSquare, scapeOptions } from "./landscapeSquare";
-import { control } from "./input";
+import { movePlayer, onkey } from "./input";
 const {
   clearColor,
   zoom,
@@ -24,6 +24,17 @@ const {
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const { width, height } = canvas;
 const ratio = width / height;
+const playerInput = { up: false, down: false, right: false, left: false };
+document.addEventListener(
+  "keydown",
+  (ev) => onkey(ev, true, playerInput),
+  false
+);
+document.addEventListener(
+  "keyup",
+  (ev) => onkey(ev, false, playerInput),
+  false
+);
 
 //shader source
 const vs_source = require("./glsl/vshader.glsl") as string;
@@ -136,7 +147,7 @@ const loop = () => {
   //clear screen
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   //box movement
-  control(player, inp, movement);
+  movePlayer(player, playerInput, movement);
   inp = "";
 
   //move landscape towards camera
