@@ -90,6 +90,40 @@ export class Mesh {
     this.rotation = new Vertex(0, 0, 0);
   }
 
+  static async fromURL(url: string, babylon: boolean = false): Promise<Mesh> {
+    const res = await fetch(url);
+    const obj = await res.json();
+    const vertices: Vertex[] = [];
+    const faces: Face[] = [];
+    if (babylon) {
+      const indices = obj.meshes[1].indices;
+      const positions = obj.meshes[1].positions;
+      const scale = 0.05;
+      for (let i = 0; i < positions.length; i += 3) {
+        vertices.push(
+          new Vertex(
+            positions[i] * scale,
+            positions[i + 1] * scale,
+            positions[i + 2] * scale
+          )
+        );
+      }
+      for (let i = 0; i < indices.length; i += 3) {
+        faces.push(new Face(indices[i], indices[i + 2], indices[i + 1]));
+      }
+    } else {
+      for (let i = 0; i < obj.vertices.length; i++) {
+        const vert = obj.vertices[i];
+        vertices.push(new Vertex(vert.x, vert.y, vert.z));
+      }
+      for (let i = 0; i < obj.faces.length; i++) {
+        const face = obj.faces[i];
+        faces.push(new Face(face.vAi, face.vBi, face.vCi, face.color));
+      }
+    }
+    return new Mesh(vertices, faces);
+  }
+
   draw = (gl: WebGLRenderingContext, program: WebGLProgram): void => {
     //if vbo doesn't exist, create it and fill with polygon info
     if (!this.vbo) {

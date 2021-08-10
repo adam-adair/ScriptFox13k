@@ -22,7 +22,14 @@ const {
 } = constants;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const playerInput = { up: false, down: false, right: false, left: false };
+const playerInput = {
+  spinL: false,
+  spinR: false,
+  up: false,
+  down: false,
+  right: false,
+  left: false,
+};
 document.onkeydown = (ev) => handleInput(ev, true, playerInput);
 document.onkeyup = (ev) => handleInput(ev, false, playerInput);
 
@@ -37,7 +44,7 @@ let inp = "";
 let enemies: Mesh[] = [];
 let player: Mesh;
 
-const init = () => {
+const init = async () => {
   //initialize webgl
   gl = canvas.getContext("webgl");
 
@@ -100,11 +107,12 @@ const init = () => {
   gl.uniform2fv(u_FogDist, a_fogDist);
 
   //set up some stupid objects
+  // player = await Mesh.fromURL("./models/player.json");
+  player = await Mesh.fromURL("./models/Rabbit.babylon", true);
   enemies.push(new Cube(0.2));
-  player = new Cube(0.3, Red);
+  // player = new Cube(0.3, Red);
   player.translate(2, 0, 0);
   player.rotate(45, 45, 45);
-  console.log(player.toJSON());
 
   for (let i = 0; i < scapeRows; i++) {
     for (let j = 0; j < scapeCols; j++) {
