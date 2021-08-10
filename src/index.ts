@@ -4,7 +4,7 @@ import { Cube } from "./cube";
 import { constants } from "./constants";
 import { Mesh } from "./mesh";
 import { LandscapeSquare, scapeOptions } from "./landscapeSquare";
-import { movePlayer, handleInput } from "./input";
+import { movePlayer, handleInput, PlayerMovement } from "./input";
 const {
   clearColor,
   zoom,
@@ -22,13 +22,19 @@ const {
 } = constants;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const playerInput = {
+const playerInput: PlayerMovement = {
   spinL: false,
   spinR: false,
   up: false,
   down: false,
   right: false,
   left: false,
+  in: false,
+  out: false,
+  spinI: false,
+  spinO: false,
+  spinU: false,
+  spinD: false,
 };
 document.onkeydown = (ev) => handleInput(ev, true, playerInput);
 document.onkeyup = (ev) => handleInput(ev, false, playerInput);
@@ -108,8 +114,9 @@ const init = async () => {
 
   //set up some stupid objects
   // player = await Mesh.fromURL("./models/player.json");
-  player = await Mesh.fromURL("./models/Rabbit.babylon", true);
-  player = await Mesh.fromURL("./models/rabbit.json");
+  // player = await Mesh.fromURL("./models/Rabbit.babylon", 1, true);
+  player = await Mesh.fromURL("./models/fox.babylon", 3, true);
+  // player = await Mesh.fromURL("./models/rabbit.json");
   // console.log(player.serialize());
   enemies.push(new Cube(0.2));
   // player = new Cube(0.3, Red);

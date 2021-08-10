@@ -45,6 +45,16 @@ export class Vertex {
       this.z - otherVertex.z
     );
   }
+  public add(otherVertex: Vertex): Vertex {
+    return new Vertex(
+      this.x + otherVertex.x,
+      this.y + otherVertex.y,
+      this.z + otherVertex.z
+    );
+  }
+  public scale(factor: number): Vertex {
+    return new Vertex(this.x * factor, this.y * factor, this.z * factor);
+  }
   public cross(otherVertex: Vertex): Vertex {
     return new Vertex(
       this.y * otherVertex.z - this.z * otherVertex.y,
@@ -81,25 +91,35 @@ export class Mesh {
   rMatrix: Matrix;
   buffer: WebGLBuffer;
   vbo: Float32Array;
-  constructor(vertices: Vertex[], faces: Face[]) {
+  normals?: Vertex[];
+  constructor(vertices: Vertex[], faces: Face[], normals?: Vertex[]) {
     this.vertices = vertices;
     this.faces = faces;
     this.pMatrix = new Matrix();
     this.rMatrix = new Matrix();
     this.position = new Vertex(0, 0, 0);
     this.rotation = new Vertex(0, 0, 0);
+    if (normals) this.normals = normals;
   }
 
   // load babylon mesh, make smaller json for js13k with serialize(), then load smaller json
-  static async fromURL(url: string, babylon: boolean = false): Promise<Mesh> {
+  static async fromURL(
+    url: string,
+    meshIndex?: number,
+    babylon: boolean = false
+  ): Promise<Mesh> {
     const res = await fetch(url);
     const obj = await res.json();
+    console.log(obj);
     const vertices: Vertex[] = [];
     const faces: Face[] = [];
+    let normals: Vertex[] = null;
     if (babylon) {
-      // todo colors, multiple meshes, scale
-      const indices = obj.meshes[1].indices;
-      const positions = obj.meshes[1].positions;
+      // todo colors, multiple meshes, scale, normals?
+      const indices = obj.meshes[meshIndex].indices;
+      const positions = obj.meshes[meshIndex].positions;
+      const _normals = obj.meshes[meshIndex].positions;
+      normals = [];
       const scale = 0.05;
       for (let i = 0; i < positions.length; i += 3) {
         vertices.push(
@@ -107,6 +127,13 @@ export class Mesh {
             positions[i] * scale,
             positions[i + 1] * scale,
             positions[i + 2] * scale
+          )
+        );
+        normals.push(
+          new Vertex(
+            _normals[i] * scale,
+            _normals[i + 1] * scale,
+            _normals[i + 2] * scale
           )
         );
       }
@@ -138,7 +165,7 @@ export class Mesh {
         faces.push(new Face(f[i], f[i + 1], f[i + 2], colors[f[i + 3]]));
       }
     }
-    return new Mesh(vertices, faces);
+    return new Mesh(vertices, faces, normals);
   }
 
   draw = (gl: WebGLRenderingContext, program: WebGLProgram): void => {
@@ -150,12 +177,24 @@ export class Mesh {
         const vA = this.vertices[vAi];
         const vB = this.vertices[vBi];
         const vC = this.vertices[vCi];
-        const normalA = vA.subtract(vB).cross(vA.subtract(vC));
+
+        let normalA: Vertex, normalB: Vertex, normalC: Vertex;
+        if (this.normals) {
+          normalA =
+            normalB =
+            normalC =
+              this.normals[vAi]
+                .add(this.normals[vBi])
+                .add(this.normals[vCi])
+                .scale(1 / 3);
+        } else {
+          normalA = normalB = normalC = vA.subtract(vB).cross(vA.subtract(vC));
+        }
         // prettier-ignore
         arr.push(
           vA.x, vA.y, vA.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z,
-          vB.x, vB.y, vB.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z,
-          vC.x, vC.y, vC.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z
+          vB.x, vB.y, vB.z, color.r, color.g, color.b, normalB.x, normalB.y, normalB.z,
+          vC.x, vC.y, vC.z, color.r, color.g, color.b, normalC.x, normalC.y, normalC.z
           )
       }
       this.vbo = new Float32Array(arr);
