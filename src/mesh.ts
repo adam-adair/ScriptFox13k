@@ -148,4 +148,11 @@ export class Mesh {
     this.position = this.position.subtract(new Vertex(-x, -y, -z));
     this.pMatrix.translateSelf(x, y, z);
   }
+
+  toJSON(): string {
+    return JSON.stringify({
+      faces: this.faces,
+      vertices: this.vertices,
+    });
+  }
 }

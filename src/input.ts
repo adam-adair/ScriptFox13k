@@ -1,6 +1,6 @@
 import { Mesh } from "./mesh";
 
-export const onkey = (
+export const handleInput = (
   ev: KeyboardEvent,
   pressed: boolean,
   inp: { up: boolean; left: boolean; down: boolean; right: boolean }

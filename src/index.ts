@@ -4,7 +4,7 @@ import { Cube } from "./cube";
 import { constants } from "./constants";
 import { Mesh } from "./mesh";
 import { LandscapeSquare, scapeOptions } from "./landscapeSquare";
-import { movePlayer, onkey } from "./input";
+import { movePlayer, handleInput } from "./input";
 const {
   clearColor,
   zoom,
@@ -22,19 +22,9 @@ const {
 } = constants;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const { width, height } = canvas;
-const ratio = width / height;
 const playerInput = { up: false, down: false, right: false, left: false };
-document.addEventListener(
-  "keydown",
-  (ev) => onkey(ev, true, playerInput),
-  false
-);
-document.addEventListener(
-  "keyup",
-  (ev) => onkey(ev, false, playerInput),
-  false
-);
+document.onkeydown = (ev) => handleInput(ev, true, playerInput);
+document.onkeyup = (ev) => handleInput(ev, false, playerInput);
 
 //shader source
 const vs_source = require("./glsl/vshader.glsl") as string;
@@ -77,7 +67,7 @@ const init = () => {
 
   //set light, camera uniforms
   const camera = gl.getUniformLocation(program, "camera");
-  const cameraMatrix = perspective(zoom, ratio, 1, 100);
+  const cameraMatrix = perspective(zoom, canvas.width / canvas.height, 1, 100);
   cameraMatrix.translateSelf(0, 0, -zoom * 2);
 
   // for ortho view:
@@ -114,6 +104,7 @@ const init = () => {
   player = new Cube(0.3, Red);
   player.translate(2, 0, 0);
   player.rotate(45, 45, 45);
+  console.log(player.toJSON());
 
   for (let i = 0; i < scapeRows; i++) {
     for (let j = 0; j < scapeCols; j++) {
@@ -197,8 +188,8 @@ const loop = () => {
   requestAnimationFrame(loop);
 };
 
-init();
-
-document.onkeydown = (ev) => {
-  inp = ev.key;
+window.onload = () => {
+  canvas.width = document.body.clientWidth;
+  canvas.height = document.body.clientHeight;
+  init();
 };
