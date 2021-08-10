@@ -109,6 +109,8 @@ const init = async () => {
   //set up some stupid objects
   // player = await Mesh.fromURL("./models/player.json");
   player = await Mesh.fromURL("./models/Rabbit.babylon", true);
+  player = await Mesh.fromURL("./models/rabbit.json");
+  // console.log(player.serialize());
   enemies.push(new Cube(0.2));
   // player = new Cube(0.3, Red);
   player.translate(2, 0, 0);

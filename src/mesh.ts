@@ -90,12 +90,14 @@ export class Mesh {
     this.rotation = new Vertex(0, 0, 0);
   }
 
+  // load babylon mesh, make smaller json for js13k with serialize(), then load smaller json
   static async fromURL(url: string, babylon: boolean = false): Promise<Mesh> {
     const res = await fetch(url);
     const obj = await res.json();
     const vertices: Vertex[] = [];
     const faces: Face[] = [];
     if (babylon) {
+      // todo colors, multiple meshes, scale
       const indices = obj.meshes[1].indices;
       const positions = obj.meshes[1].positions;
       const scale = 0.05;
@@ -112,13 +114,28 @@ export class Mesh {
         faces.push(new Face(indices[i], indices[i + 2], indices[i + 1]));
       }
     } else {
-      for (let i = 0; i < obj.vertices.length; i++) {
-        const vert = obj.vertices[i];
-        vertices.push(new Vertex(vert.x, vert.y, vert.z));
+      // for mesh JSON
+
+      // for (let i = 0; i < obj.vertices.length; i++) {
+      //   const vert = obj.vertices[i];
+      //   vertices.push(new Vertex(vert.x, vert.y, vert.z));
+      // }
+      // for (let i = 0; i < obj.faces.length; i++) {
+      //   const face = obj.faces[i];
+      //   faces.push(new Face(face.vAi, face.vBi, face.vCi, face.color));
+      // }
+
+      // for serialized mesh
+      const { v, f, c } = obj;
+      const colors: Color[] = [];
+      for (let i = 0; i < v.length; i += 3) {
+        vertices.push(new Vertex(v[i], v[i + 1], v[i + 2]));
       }
-      for (let i = 0; i < obj.faces.length; i++) {
-        const face = obj.faces[i];
-        faces.push(new Face(face.vAi, face.vBi, face.vCi, face.color));
+      for (let i = 0; i < c.length; i += 3) {
+        colors.push(new Color(c[i], c[i + 1], c[i + 2]));
+      }
+      for (let i = 0; i < f.length; i += 4) {
+        faces.push(new Face(f[i], f[i + 1], f[i + 2], colors[f[i + 3]]));
       }
     }
     return new Mesh(vertices, faces);
@@ -186,10 +203,33 @@ export class Mesh {
     this.pMatrix.translateSelf(x, y, z);
   }
 
-  toJSON(): string {
-    return JSON.stringify({
-      faces: this.faces,
-      vertices: this.vertices,
-    });
+  // toJSON(): string {
+  //   return JSON.stringify({
+  //     faces: this.faces,
+  //     vertices: this.vertices,
+  //   });
+  // }
+
+  serialize(): string {
+    const v = [];
+    const f = [];
+    const c = [];
+    const colorsArray: string[] = [];
+    for (let i = 0; i < this.vertices.length; i++) {
+      const vert = this.vertices[i];
+      v.push(+vert.x.toFixed(8), +vert.y.toFixed(8), +vert.z.toFixed(8));
+    }
+    for (let i = 0; i < this.faces.length; i++) {
+      const face = this.faces[i];
+      const faceColor =
+        "r" + face.color.r + "g" + face.color.g + "b" + face.color.b;
+      if (!colorsArray.includes(faceColor)) {
+        colorsArray.push(faceColor);
+        c.push(face.color.r, face.color.g, face.color.b);
+      }
+      const colorIndex = colorsArray.indexOf(faceColor);
+      f.push(face.vAi, face.vBi, face.vCi, colorIndex);
+    }
+    return JSON.stringify({ v, f, c });
   }
 }
