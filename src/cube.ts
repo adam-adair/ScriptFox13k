@@ -13,18 +13,18 @@ export class Cube extends Mesh {
     Vertices[7] = new Vertex(d, d, d);
 
     const Faces = [];
-    Faces[0] = new Face(Vertices[0], Vertices[1], Vertices[2], color);
-    Faces[1] = new Face(Vertices[3], Vertices[2], Vertices[1], color);
-    Faces[2] = new Face(Vertices[5], Vertices[7], Vertices[4], color);
-    Faces[3] = new Face(Vertices[6], Vertices[4], Vertices[7], color);
-    Faces[4] = new Face(Vertices[2], Vertices[3], Vertices[5], color);
-    Faces[5] = new Face(Vertices[7], Vertices[5], Vertices[3], color);
-    Faces[6] = new Face(Vertices[4], Vertices[6], Vertices[0], color);
-    Faces[7] = new Face(Vertices[1], Vertices[0], Vertices[6], color);
-    Faces[8] = new Face(Vertices[3], Vertices[1], Vertices[7], color);
-    Faces[9] = new Face(Vertices[6], Vertices[7], Vertices[1], color);
-    Faces[10] = new Face(Vertices[5], Vertices[4], Vertices[2], color);
-    Faces[11] = new Face(Vertices[0], Vertices[2], Vertices[4], color);
+    Faces[0] = new Face(0, 1, 2, color);
+    Faces[1] = new Face(3, 2, 1, color);
+    Faces[2] = new Face(5, 7, 4, color);
+    Faces[3] = new Face(6, 4, 7, color);
+    Faces[4] = new Face(2, 3, 5, color);
+    Faces[5] = new Face(7, 5, 3, color);
+    Faces[6] = new Face(4, 6, 0, color);
+    Faces[7] = new Face(1, 0, 6, color);
+    Faces[8] = new Face(3, 1, 7, color);
+    Faces[9] = new Face(6, 7, 1, color);
+    Faces[10] = new Face(5, 4, 2, color);
+    Faces[11] = new Face(0, 2, 4, color);
     super(Vertices, Faces);
   }
 }

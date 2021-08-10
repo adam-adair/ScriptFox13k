@@ -60,14 +60,14 @@ export class Vertex {
 }
 
 export class Face {
-  vA: Vertex;
-  vB: Vertex;
-  vC: Vertex;
+  vAi: number;
+  vBi: number;
+  vCi: number;
   color: Color;
-  constructor(vA: Vertex, vB: Vertex, vC: Vertex, color: Color = White) {
-    this.vA = vA;
-    this.vB = vB;
-    this.vC = vC;
+  constructor(vA: number, vB: number, vC: number, color: Color = White) {
+    this.vAi = vA;
+    this.vBi = vB;
+    this.vCi = vC;
     this.color = color;
   }
 }
@@ -95,7 +95,10 @@ export class Mesh {
     if (!this.vbo) {
       const arr = [];
       for (let i = 0; i < this.faces.length; i++) {
-        const { vA, vB, vC, color } = this.faces[i];
+        const { vAi, vBi, vCi, color } = this.faces[i];
+        const vA = this.vertices[vAi];
+        const vB = this.vertices[vBi];
+        const vC = this.vertices[vCi];
         const normalA = vA.subtract(vB).cross(vA.subtract(vC));
         // prettier-ignore
         arr.push(

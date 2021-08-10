@@ -26,15 +26,15 @@ export class LandscapeSquare extends Mesh {
     vertices[2] = new Vertex(0, bl, -width);
     vertices[3] = new Vertex(0, fl, 0);
     faces[0] = {
-      vA: vertices[0],
-      vB: vertices[2],
-      vC: vertices[1],
+      vAi: 0,
+      vBi: 2,
+      vCi: 1,
       color: scapeOptions.color ? scapeOptions.color : Green,
     };
     faces[1] = {
-      vA: vertices[3],
-      vB: vertices[1],
-      vC: vertices[2],
+      vAi: 3,
+      vBi: 1,
+      vCi: 2,
       color: scapeOptions.color ? scapeOptions.color : Green,
     };
     super(vertices, faces);
