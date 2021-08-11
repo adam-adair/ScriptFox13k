@@ -190,6 +190,7 @@ export class Mesh {
         } else {
           normalA = normalB = normalC = vA.subtract(vB).cross(vA.subtract(vC));
         }
+        // normalA = normalB = normalC = vA.subtract(vB).cross(vA.subtract(vC));
         // prettier-ignore
         arr.push(
           vA.x, vA.y, vA.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z,

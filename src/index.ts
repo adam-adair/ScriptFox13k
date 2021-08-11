@@ -120,8 +120,8 @@ const init = async () => {
   // console.log(player.serialize());
   enemies.push(new Cube(0.2));
   // player = new Cube(0.3, Red);
-  player.translate(2, 0, 0);
-  player.rotate(45, 45, 45);
+  player.translate(0, -2, 0);
+  player.rotate(90, 90, 0);
 
   for (let i = 0; i < scapeRows; i++) {
     for (let j = 0; j < scapeCols; j++) {
