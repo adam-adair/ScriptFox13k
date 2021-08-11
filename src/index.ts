@@ -113,12 +113,15 @@ const init = async () => {
   gl.uniform2fv(u_FogDist, a_fogDist);
 
   //set up some stupid objects
-  // player = await Mesh.fromURL("./models/player.json");
-  // player = await Mesh.fromURL("./models/Rabbit.babylon", 1, true);
-  player = await Mesh.fromURL("./models/fox.babylon", 3, true);
-  // player = await Mesh.fromURL("./models/rabbit.json");
-  // console.log(player.serialize());
+
+  player = await Mesh.fromURL("./models/Rabbit.babylon", 0.05, 1, true);
+  // player = await Mesh.fromURL("./models/rabbit.json", 1);
+
+  // player = await Mesh.fromURL("./models/fox.babylon", 0.05, 3, true);
+  // player = await Mesh.fromURL("./models/fox.json", 1);
+
   enemies.push(new Cube(0.2));
+
   // player = new Cube(0.3, Red);
   player.translate(0, -2, 0);
   player.rotate(90, 90, 0);

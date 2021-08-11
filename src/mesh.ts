@@ -105,22 +105,21 @@ export class Mesh {
   // load babylon mesh, make smaller json for js13k with serialize(), then load smaller json
   static async fromURL(
     url: string,
+    scale: number,
     meshIndex?: number,
     babylon: boolean = false
   ): Promise<Mesh> {
     const res = await fetch(url);
     const obj = await res.json();
-    console.log(obj);
     const vertices: Vertex[] = [];
     const faces: Face[] = [];
     let normals: Vertex[] = null;
     if (babylon) {
-      // todo colors, multiple meshes, scale, normals?
+      // todo colors
       const indices = obj.meshes[meshIndex].indices;
       const positions = obj.meshes[meshIndex].positions;
-      const _normals = obj.meshes[meshIndex].positions;
+      const _normals = obj.meshes[meshIndex].normals;
       normals = [];
-      const scale = 0.05;
       for (let i = 0; i < positions.length; i += 3) {
         vertices.push(
           new Vertex(
@@ -129,34 +128,23 @@ export class Mesh {
             positions[i + 2] * scale
           )
         );
-        normals.push(
-          new Vertex(
-            _normals[i] * scale,
-            _normals[i + 1] * scale,
-            _normals[i + 2] * scale
-          )
-        );
+        normals.push(new Vertex(_normals[i], _normals[i + 1], _normals[i + 2]));
       }
       for (let i = 0; i < indices.length; i += 3) {
         faces.push(new Face(indices[i], indices[i + 2], indices[i + 1]));
       }
     } else {
-      // for mesh JSON
-
-      // for (let i = 0; i < obj.vertices.length; i++) {
-      //   const vert = obj.vertices[i];
-      //   vertices.push(new Vertex(vert.x, vert.y, vert.z));
-      // }
-      // for (let i = 0; i < obj.faces.length; i++) {
-      //   const face = obj.faces[i];
-      //   faces.push(new Face(face.vAi, face.vBi, face.vCi, face.color));
-      // }
-
       // for serialized mesh
-      const { v, f, c } = obj;
+      const { v, f, c, n } = obj;
       const colors: Color[] = [];
       for (let i = 0; i < v.length; i += 3) {
-        vertices.push(new Vertex(v[i], v[i + 1], v[i + 2]));
+        vertices.push(
+          new Vertex(v[i] * scale, v[i + 1] * scale, v[i + 2] * scale)
+        );
+        if (n) {
+          const norm = new Vertex(n[i], n[i + 1], n[i + 2]);
+          normals ? normals.push(norm) : (normals = [norm]);
+        }
       }
       for (let i = 0; i < c.length; i += 3) {
         colors.push(new Color(c[i], c[i + 1], c[i + 2]));
@@ -183,14 +171,10 @@ export class Mesh {
           normalA =
             normalB =
             normalC =
-              this.normals[vAi]
-                .add(this.normals[vBi])
-                .add(this.normals[vCi])
-                .scale(1 / 3);
+              this.normals[vAi].add(this.normals[vBi]).add(this.normals[vCi]);
         } else {
           normalA = normalB = normalC = vA.subtract(vB).cross(vA.subtract(vC));
         }
-        // normalA = normalB = normalC = vA.subtract(vB).cross(vA.subtract(vC));
         // prettier-ignore
         arr.push(
           vA.x, vA.y, vA.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z,
@@ -243,21 +227,20 @@ export class Mesh {
     this.pMatrix.translateSelf(x, y, z);
   }
 
-  // toJSON(): string {
-  //   return JSON.stringify({
-  //     faces: this.faces,
-  //     vertices: this.vertices,
-  //   });
-  // }
-
   serialize(): string {
     const v = [];
     const f = [];
     const c = [];
+    let n: number[];
+    if (this.normals) n = [];
     const colorsArray: string[] = [];
     for (let i = 0; i < this.vertices.length; i++) {
       const vert = this.vertices[i];
       v.push(+vert.x.toFixed(8), +vert.y.toFixed(8), +vert.z.toFixed(8));
+      if (this.normals) {
+        const norm = this.normals[i];
+        n.push(+norm.x.toFixed(8), +norm.y.toFixed(8), +norm.z.toFixed(8));
+      }
     }
     for (let i = 0; i < this.faces.length; i++) {
       const face = this.faces[i];
@@ -270,6 +253,6 @@ export class Mesh {
       const colorIndex = colorsArray.indexOf(faceColor);
       f.push(face.vAi, face.vBi, face.vCi, colorIndex);
     }
-    return JSON.stringify({ v, f, c });
+    return JSON.stringify({ v, f, c, n });
   }
 }
