@@ -1,3 +1,5 @@
+import { CPlayer } from "../music/player-small";
+import { song } from "../music/song";
 import { perspective, orthogonal } from "./camera";
 import { Red } from "./colors";
 import { Cube } from "./cube";
@@ -113,7 +115,7 @@ const init = async () => {
   gl.uniform2fv(u_FogDist, a_fogDist);
 
   // set up some objects
-  player = await Mesh.fromObjMtl("./obj/ship.obj", "./obj/ship.mtl", 0.05);
+  player = await Mesh.fromObjMtl("./obj/ship2.obj", "./obj/ship2.mtl", 0.05);
   // player = await Mesh.fromSerialized("./models/ship.json");
   enemies.push(new Cube(0.2));
 
@@ -204,7 +206,33 @@ const loop = () => {
 };
 
 window.onload = () => {
-  canvas.width = document.body.clientWidth;
-  canvas.height = document.body.clientHeight;
+  canvas.width = 640; //document.body.clientWidth;
+  canvas.height = 480; //document.body.clientHeight;
+};
+
+const startMusic = () => {
+  const cPlayer = new CPlayer();
+  cPlayer.init(song);
+  cPlayer.generate();
+  var done = false;
+  setInterval(function () {
+    if (done) {
+      return;
+    }
+
+    done = cPlayer.generate() >= 1;
+
+    if (done) {
+      // Put the generated song in an Audio element.
+      var wave = cPlayer.createWave();
+      var audio = document.createElement("audio");
+      audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
+      audio.play();
+      audio.loop = true;
+    }
+  }, 0);
+
   init();
 };
+
+document.getElementById("start").onclick = startMusic;
