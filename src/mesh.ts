@@ -91,69 +91,73 @@ export class Mesh {
   rMatrix: Matrix;
   buffer: WebGLBuffer;
   vbo: Float32Array;
-  normals?: Vertex[];
-  constructor(vertices: Vertex[], faces: Face[], normals?: Vertex[]) {
+  constructor(vertices: Vertex[], faces: Face[]) {
     this.vertices = vertices;
     this.faces = faces;
     this.pMatrix = new Matrix();
     this.rMatrix = new Matrix();
     this.position = new Vertex(0, 0, 0);
     this.rotation = new Vertex(0, 0, 0);
-    if (normals) this.normals = normals;
   }
 
-  // load babylon mesh, make smaller json for js13k with serialize(), then load smaller json
-  static async fromURL(
-    url: string,
-    scale: number,
-    meshIndex?: number,
-    babylon: boolean = false
-  ): Promise<Mesh> {
+  static async fromSerialized(url: string): Promise<Mesh> {
     const res = await fetch(url);
     const obj = await res.json();
     const vertices: Vertex[] = [];
     const faces: Face[] = [];
-    let normals: Vertex[] = null;
-    if (babylon) {
-      // todo colors
-      const indices = obj.meshes[meshIndex].indices;
-      const positions = obj.meshes[meshIndex].positions;
-      const _normals = obj.meshes[meshIndex].normals;
-      normals = [];
-      for (let i = 0; i < positions.length; i += 3) {
-        vertices.push(
-          new Vertex(
-            positions[i] * scale,
-            positions[i + 1] * scale,
-            positions[i + 2] * scale
-          )
-        );
-        normals.push(new Vertex(_normals[i], _normals[i + 1], _normals[i + 2]));
-      }
-      for (let i = 0; i < indices.length; i += 3) {
-        faces.push(new Face(indices[i], indices[i + 2], indices[i + 1]));
-      }
-    } else {
-      // for serialized mesh
-      const { v, f, c, n } = obj;
-      const colors: Color[] = [];
-      for (let i = 0; i < v.length; i += 3) {
-        vertices.push(
-          new Vertex(v[i] * scale, v[i + 1] * scale, v[i + 2] * scale)
-        );
-        if (n) {
-          const norm = new Vertex(n[i], n[i + 1], n[i + 2]);
-          normals ? normals.push(norm) : (normals = [norm]);
-        }
-      }
-      for (let i = 0; i < c.length; i += 3) {
-        colors.push(new Color(c[i], c[i + 1], c[i + 2]));
-      }
-      for (let i = 0; i < f.length; i += 4) {
-        faces.push(new Face(f[i], f[i + 1], f[i + 2], colors[f[i + 3]]));
+    // for serialized mesh
+    const { v, f, c } = obj;
+    const colors: Color[] = [];
+    for (let i = 0; i < v.length; i += 3) {
+      vertices.push(new Vertex(v[i], v[i + 1], v[i + 2]));
+    }
+    for (let i = 0; i < c.length; i += 3) {
+      colors.push(new Color(c[i], c[i + 1], c[i + 2]));
+    }
+    for (let i = 0; i < f.length; i += 4) {
+      faces.push(new Face(f[i], f[i + 1], f[i + 2], colors[f[i + 3]]));
+    }
+    return new Mesh(vertices, faces);
+  }
+
+  static async fromObjMtl(
+    url: string,
+    mtlUrl: string,
+    scale: number
+  ): Promise<Mesh> {
+    const res = await fetch(url);
+    const objArr = (await res.text()).split("\n");
+    const mtlRes = await fetch(mtlUrl);
+    const mtlArr = (await mtlRes.text()).split("\n");
+    const vertices: Vertex[] = [];
+    const faces: Face[] = [];
+    type MaterialsList = {
+      [key: string]: Color;
+    };
+    const Colors: MaterialsList = {};
+    for (let i = 0; i < mtlArr.length; i++) {
+      const ln = mtlArr[i].split(" ");
+      if (ln[0] === "newmtl") {
+        const cols = mtlArr[i + 3].split(" ");
+        Colors[ln[1]] = new Color(+cols[1], +cols[2], +cols[3]);
       }
     }
-    return new Mesh(vertices, faces, normals);
+    let currentCol = "";
+    for (let i = 0; i < objArr.length; i++) {
+      const ln = objArr[i].split(" ");
+      if (ln[0] === "usemtl") currentCol = ln[1];
+      if (ln[0] === "v")
+        vertices.push(
+          new Vertex(+ln[1] * scale, +ln[2] * scale, +ln[3] * scale)
+        );
+      if (ln[0] === "f") {
+        const A = +ln[1].split("/")[0] - 1;
+        const B = +ln[2].split("/")[0] - 1;
+        const C = +ln[3].split("/")[0] - 1;
+        faces.push(new Face(A, B, C, Colors[currentCol]));
+      }
+    }
+    return new Mesh(vertices, faces);
   }
 
   draw = (gl: WebGLRenderingContext, program: WebGLProgram): void => {
@@ -165,16 +169,8 @@ export class Mesh {
         const vA = this.vertices[vAi];
         const vB = this.vertices[vBi];
         const vC = this.vertices[vCi];
-
-        let normalA: Vertex, normalB: Vertex, normalC: Vertex;
-        if (this.normals) {
-          normalA =
-            normalB =
-            normalC =
-              this.normals[vAi].add(this.normals[vBi]).add(this.normals[vCi]);
-        } else {
-          normalA = normalB = normalC = vA.subtract(vB).cross(vA.subtract(vC));
-        }
+        let normalA, normalB, normalC;
+        normalA = normalB = normalC = vA.subtract(vB).cross(vA.subtract(vC));
         // prettier-ignore
         arr.push(
           vA.x, vA.y, vA.z, color.r, color.g, color.b, normalA.x, normalA.y, normalA.z,
@@ -227,20 +223,18 @@ export class Mesh {
     this.pMatrix.translateSelf(x, y, z);
   }
 
-  serialize(): string {
+  serialize(precision: number): string {
     const v = [];
     const f = [];
     const c = [];
-    let n: number[];
-    if (this.normals) n = [];
     const colorsArray: string[] = [];
     for (let i = 0; i < this.vertices.length; i++) {
       const vert = this.vertices[i];
-      v.push(+vert.x.toFixed(8), +vert.y.toFixed(8), +vert.z.toFixed(8));
-      if (this.normals) {
-        const norm = this.normals[i];
-        n.push(+norm.x.toFixed(8), +norm.y.toFixed(8), +norm.z.toFixed(8));
-      }
+      v.push(
+        +vert.x.toFixed(precision),
+        +vert.y.toFixed(precision),
+        +vert.z.toFixed(precision)
+      );
     }
     for (let i = 0; i < this.faces.length; i++) {
       const face = this.faces[i];
@@ -253,6 +247,6 @@ export class Mesh {
       const colorIndex = colorsArray.indexOf(faceColor);
       f.push(face.vAi, face.vBi, face.vCi, colorIndex);
     }
-    return JSON.stringify({ v, f, c, n });
+    return JSON.stringify({ v, f, c });
   }
 }

@@ -112,19 +112,14 @@ const init = async () => {
   gl.uniform3fv(u_FogColor, a_fogColor);
   gl.uniform2fv(u_FogDist, a_fogDist);
 
-  //set up some stupid objects
-
-  player = await Mesh.fromURL("./models/Rabbit.babylon", 0.05, 1, true);
-  // player = await Mesh.fromURL("./models/rabbit.json", 1);
-
-  // player = await Mesh.fromURL("./models/fox.babylon", 0.05, 3, true);
-  // player = await Mesh.fromURL("./models/fox.json", 1);
-
+  // set up some objects
+  player = await Mesh.fromObjMtl("./obj/ship.obj", "./obj/ship.mtl", 0.05);
+  // player = await Mesh.fromSerialized("./models/ship.json");
   enemies.push(new Cube(0.2));
 
   // player = new Cube(0.3, Red);
   player.translate(0, -2, 0);
-  player.rotate(90, 90, 0);
+  player.rotate(0, 180, 0);
 
   for (let i = 0; i < scapeRows; i++) {
     for (let j = 0; j < scapeCols; j++) {
