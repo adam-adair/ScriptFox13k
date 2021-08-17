@@ -23,8 +23,7 @@ const {
   fogDistance,
 } = constants;
 
-// const start = document.getElementById("start");
-const start = document.body;
+const start = document.getElementById("start");
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const playerInput: PlayerMovement = {
@@ -53,6 +52,7 @@ let program: WebGLProgram;
 let landscape: LandscapeSquare[] = [];
 let enemies: Mesh[] = [];
 let player: Mesh;
+let lastTime: number;
 
 //check if line segments intersect
 // const intersect = (
@@ -136,7 +136,7 @@ const init = async () => {
   gl.uniform2fv(u_FogDist, a_fogDist);
 
   // set up some objects
-  player = await Mesh.fromObjMtl("./obj/ship2.obj", "./obj/ship2.mtl", 0.05);
+  player = await Mesh.fromObjMtl("./obj/ship3.obj", "./obj/ship3.mtl", 0.05);
   // player = await Mesh.fromSerialized("./models/ship.json");
   enemies.push(new Cube(0.2));
 
@@ -171,7 +171,11 @@ const init = async () => {
   requestAnimationFrame(loop);
 };
 //game loop
-const loop = () => {
+const loop = (time: number) => {
+  if (lastTime) {
+    //do something w time gap
+  }
+  lastTime = time;
   //clear screen
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   //player movement
@@ -224,12 +228,13 @@ const loop = () => {
       //check line against player extents
       // console.log(player.bottomSegment);
       if (player.intersect(modelMatrix, segment)) {
+        player.translate(0, movement, 0);
         hit = "red";
       } else {
       }
     }
   }
-  start.style.background = hit;
+  document.body.style.background = hit;
 
   // draw enemies
   for (let i = 0; i < enemies.length; i++) {
@@ -250,25 +255,25 @@ window.onload = () => {
 };
 
 const startMusic = () => {
-  // const cPlayer = new CPlayer();
-  // cPlayer.init(song);
-  // cPlayer.generate();
-  // var done = false;
-  // setInterval(function () {
-  //   if (done) {
-  //     return;
-  //   }
-  //   done = cPlayer.generate() >= 1;
-  //   if (done) {
-  //     // Put the generated song in an Audio element.
-  //     var wave = cPlayer.createWave();
-  //     var audio = document.createElement("audio");
-  //     audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
-  //     audio.play();
-  //     audio.loop = true;
-  //   }
-  // }, 0);
-  // init();
+  const cPlayer = new CPlayer();
+  cPlayer.init(song);
+  cPlayer.generate();
+  var done = false;
+  setInterval(function () {
+    if (done) {
+      return;
+    }
+    done = cPlayer.generate() >= 1;
+    if (done) {
+      // Put the generated song in an Audio element.
+      var wave = cPlayer.createWave();
+      var audio = document.createElement("audio");
+      audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
+      audio.play();
+      audio.loop = true;
+    }
+  }, 0);
+  init();
 };
 
-//.onclick = startMusic;
+// start.onclick = startMusic;

@@ -108,18 +108,23 @@ export class Mesh {
     const extents = {
       x1: Infinity,
       y1: Infinity,
+      z1: Infinity,
       x2: -Infinity,
-      y2: Infinity,
+      y2: -Infinity,
+      z2: -Infinity,
     };
     for (let i = 0; i < this.vertices.length; i++) {
       const vert = this.vertices[i];
       if (vert.x < extents.x1) extents.x1 = vert.x;
-      if (vert.y < extents.y1) extents.y1 = extents.y2 = vert.y;
+      if (vert.y < extents.y1) extents.y1 = vert.y;
+      if (vert.z < extents.z1) extents.z1 = vert.z;
       if (vert.x > extents.x2) extents.x2 = vert.x;
+      if (vert.y > extents.y2) extents.y2 = vert.y;
+      if (vert.z > extents.z2) extents.z2 = vert.z;
     }
     this.bottomSegment = [
-      new DOMPoint(extents.x1, extents.y1, 0),
-      new DOMPoint(extents.x2, extents.y2, 0),
+      new DOMPoint(extents.x1, extents.y1, extents.z1),
+      new DOMPoint(extents.x2, extents.y1, extents.z1),
     ];
   }
 
@@ -285,7 +290,7 @@ export class Mesh {
     this.e_vbo = new Float32Array([
       trans1.x,
       trans1.y,
-      0,
+      trans1.z,
       Red.r,
       Red.g,
       Red.b,
@@ -294,7 +299,7 @@ export class Mesh {
       -10,
       trans2.x,
       trans2.y,
-      0,
+      trans1.z,
       Red.r,
       Red.g,
       Red.b,
@@ -335,30 +340,13 @@ export class Mesh {
 
     gl.drawArrays(gl.LINE_LOOP, 0, 2);
   };
-  /////////////////////////////////////////////
-  turn = (
-    p1: { x: number; y: number },
-    p2: { x: number; y: number },
-    p3: { x: number; y: number }
-  ) => {
-    const a = p1.y;
-    const b = p1.x;
-    const c = p2.y;
-    const d = p2.x;
-    const e = p3.y;
-    const f = p3.x;
-    const A = (f - b) * (c - a);
-    const B = (d - b) * (e - a);
-    return A > B + Number.EPSILON ? 1 : A + Number.EPSILON < B ? -1 : 0;
-  };
 
-  //revise this to use matrices, factor in rotation, deal with being completely under the ground
   intersect = (
     modelMatrix: DOMMatrix,
     a: { x1: number; y1: number; x2: number; y2: number }
   ) => {
-    const trans1 = this.bottomSegment[0].matrixTransform(modelMatrix);
-    const trans2 = this.bottomSegment[1].matrixTransform(modelMatrix);
+    const trans1 = this.bottomSegment[1].matrixTransform(modelMatrix);
+    const trans2 = this.bottomSegment[0].matrixTransform(modelMatrix);
     //use matrices and get rotation
     const b = {
       x1: trans1.x,
@@ -366,13 +354,20 @@ export class Mesh {
       y1: trans1.y,
       y2: trans2.y,
     };
-    const p1 = { x: a.x1, y: a.y1 };
-    const p2 = { x: a.x2, y: a.y2 };
-    const p3 = { x: b.x1, y: b.y1 };
-    const p4 = { x: b.x2, y: b.y2 };
-    return (
-      this.turn(p1, p3, p4) != this.turn(p2, p3, p4) &&
-      this.turn(p1, p2, p3) != this.turn(p1, p2, p4)
-    );
+    //left side of ship between two segments
+    if (a.x1 < b.x1 && a.x2 > b.x1) {
+      const ht = a.y2 - a.y1;
+      const fwt = (b.x1 - a.x1) / (a.x2 - a.x1);
+      const fht = fwt * ht + a.y1;
+      if (b.y1 < fht) return true;
+    }
+    //right side of ship between two segments
+    if (a.x1 < b.x2 && a.x2 > b.x2) {
+      const ht = a.y2 - a.y1;
+      const fwt = (b.x2 - a.x1) / (a.x2 - a.x1);
+      const fht = fwt * ht + a.y1;
+      if (b.y2 < fht) return true;
+    }
+    return false;
   };
 }

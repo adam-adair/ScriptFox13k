@@ -17,10 +17,10 @@ export class LandscapeSquare extends Mesh {
     const faces: Face[] = [];
     const vertices: Vertex[] = [];
     const { width, height } = scapeOptions;
-    const fl = scapeOptions.fl || Math.random() * height;
-    const fr = scapeOptions.fr || Math.random() * height;
-    const bl = scapeOptions.bl || Math.random() * height;
-    const br = Math.random() * height;
+    const fl = scapeOptions.fl || height * Math.random();
+    const fr = scapeOptions.fr || height * Math.random();
+    const bl = scapeOptions.bl || height * Math.random();
+    const br = height * Math.random();
     vertices[0] = new Vertex(width, br, -width);
     vertices[1] = new Vertex(width, fr, 0);
     vertices[2] = new Vertex(0, bl, -width);
