@@ -223,7 +223,7 @@ const loop = () => {
       };
       //check line against player extents
       // console.log(player.bottomSegment);
-      if (player.intersect(segment)) {
+      if (player.intersect(modelMatrix, segment)) {
         hit = "red";
       } else {
       }

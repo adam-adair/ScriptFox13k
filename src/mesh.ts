@@ -45,16 +45,16 @@ export class Vertex {
       this.z - otherVertex.z
     );
   }
-  public add(otherVertex: Vertex): Vertex {
-    return new Vertex(
-      this.x + otherVertex.x,
-      this.y + otherVertex.y,
-      this.z + otherVertex.z
-    );
-  }
-  public scale(factor: number): Vertex {
-    return new Vertex(this.x * factor, this.y * factor, this.z * factor);
-  }
+  // public add(otherVertex: Vertex): Vertex {
+  //   return new Vertex(
+  //     this.x + otherVertex.x,
+  //     this.y + otherVertex.y,
+  //     this.z + otherVertex.z
+  //   );
+  // }
+  // public scale(factor: number): Vertex {
+  //   return new Vertex(this.x * factor, this.y * factor, this.z * factor);
+  // }
   public cross(otherVertex: Vertex): Vertex {
     return new Vertex(
       this.y * otherVertex.z - this.z * otherVertex.y,
@@ -62,11 +62,11 @@ export class Vertex {
       this.x * otherVertex.y - this.y * otherVertex.x
     );
   }
-  public dot(otherVertex: Vertex): number {
-    return (
-      this.x * otherVertex.x + this.y * otherVertex.y + this.z * otherVertex.z
-    );
-  }
+  // public dot(otherVertex: Vertex): number {
+  //   return (
+  //     this.x * otherVertex.x + this.y * otherVertex.y + this.z * otherVertex.z
+  //   );
+  // }
 }
 
 export class Face {
@@ -96,7 +96,7 @@ export class Mesh {
   e_vbo: Float32Array;
   bottomSegmentuffer: WebGLBuffer;
   //remove
-  bottomSegment: [Vertex, Vertex];
+  bottomSegment: [DOMPoint, DOMPoint];
   /////////////////////////////////////////////
   constructor(vertices: Vertex[], faces: Face[]) {
     this.vertices = vertices;
@@ -118,8 +118,8 @@ export class Mesh {
       if (vert.x > extents.x2) extents.x2 = vert.x;
     }
     this.bottomSegment = [
-      new Vertex(extents.x1, extents.y1, 0),
-      new Vertex(extents.x2, extents.y2, 0),
+      new DOMPoint(extents.x1, extents.y1, 0),
+      new DOMPoint(extents.x2, extents.y2, 0),
     ];
   }
 
@@ -278,29 +278,32 @@ export class Mesh {
   //remove later
   drawExtents = (gl: WebGLRenderingContext, program: WebGLProgram): void => {
     //if vbo doesn't exist, create it and fill with polygon info
-    if (!this.e_vbo) {
-      this.e_vbo = new Float32Array([
-        this.bottomSegment[0].x,
-        this.bottomSegment[0].y,
-        0,
-        Red.r,
-        Red.g,
-        Red.b,
-        -10,
-        -10,
-        -10,
-        this.bottomSegment[1].x,
-        this.bottomSegment[1].y,
-        0,
-        Red.r,
-        Red.g,
-        Red.b,
-        -10,
-        -10,
-        -10,
-      ]);
-      this.bottomSegmentuffer = gl.createBuffer();
-    }
+    // if (!this.e_vbo) {
+    const mm = this.pMatrix.multiply(this.rMatrix);
+    const trans1 = this.bottomSegment[0].matrixTransform(mm);
+    const trans2 = this.bottomSegment[1].matrixTransform(mm);
+    this.e_vbo = new Float32Array([
+      trans1.x,
+      trans1.y,
+      0,
+      Red.r,
+      Red.g,
+      Red.b,
+      -10,
+      -10,
+      -10,
+      trans2.x,
+      trans2.y,
+      0,
+      Red.r,
+      Red.g,
+      Red.b,
+      -10,
+      -10,
+      -10,
+    ]);
+    this.bottomSegmentuffer = gl.createBuffer();
+    // }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bottomSegmentuffer);
     gl.bufferData(gl.ARRAY_BUFFER, this.e_vbo, gl.STATIC_DRAW);
@@ -322,7 +325,7 @@ export class Mesh {
     const model = gl.getUniformLocation(program, "model");
     const nMatrix = gl.getUniformLocation(program, "nMatrix");
 
-    const modelMatrix = this.pMatrix.multiply(this.rMatrix);
+    const modelMatrix = new Matrix(); //this.pMatrix.multiply(this.rMatrix);
     const normalMatrix = new Matrix(modelMatrix.toString());
     normalMatrix.invertSelf();
     normalMatrix.transposeSelf();
@@ -334,9 +337,9 @@ export class Mesh {
   };
   /////////////////////////////////////////////
   turn = (
-    p1: { x: any; y: any },
-    p2: { x: any; y: any },
-    p3: { x: any; y: any }
+    p1: { x: number; y: number },
+    p2: { x: number; y: number },
+    p3: { x: number; y: number }
   ) => {
     const a = p1.y;
     const b = p1.x;
@@ -350,13 +353,18 @@ export class Mesh {
   };
 
   //revise this to use matrices, factor in rotation, deal with being completely under the ground
-  intersect = (a: { x1: number; y1: number; x2: number; y2: number }) => {
+  intersect = (
+    modelMatrix: DOMMatrix,
+    a: { x1: number; y1: number; x2: number; y2: number }
+  ) => {
+    const trans1 = this.bottomSegment[0].matrixTransform(modelMatrix);
+    const trans2 = this.bottomSegment[1].matrixTransform(modelMatrix);
     //use matrices and get rotation
     const b = {
-      x1: this.bottomSegment[0].x + this.position.x,
-      x2: this.bottomSegment[1].x + this.position.x,
-      y1: this.bottomSegment[0].y + this.position.y,
-      y2: this.bottomSegment[1].y + this.position.y,
+      x1: trans1.x,
+      x2: trans2.x,
+      y1: trans1.y,
+      y2: trans2.y,
     };
     const p1 = { x: a.x1, y: a.y1 };
     const p2 = { x: a.x2, y: a.y2 };
