@@ -37,14 +37,14 @@ export const handleInput = (
       inp.right = pressed;
       ev.preventDefault();
       break;
-    case "q":
-      inp.in = pressed;
-      ev.preventDefault();
-      break;
-    case "e":
-      inp.out = pressed;
-      ev.preventDefault();
-      break;
+    // case "q":
+    //   inp.in = pressed;
+    //   ev.preventDefault();
+    //   break;
+    // case "e":
+    //   inp.out = pressed;
+    //   ev.preventDefault();
+    //   break;
     case "r":
       inp.spinR = pressed;
       ev.preventDefault();
@@ -61,11 +61,11 @@ export const handleInput = (
       inp.spinD = pressed;
       ev.preventDefault();
       break;
-    case "y":
+    case "e":
       inp.spinI = pressed;
       ev.preventDefault();
       break;
-    case "h":
+    case "q":
       inp.spinO = pressed;
       ev.preventDefault();
       break;

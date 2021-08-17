@@ -182,7 +182,6 @@ const loop = (time: number) => {
   movePlayer(player, playerInput, movement);
   //draw player
   const modelMatrix = player.draw(gl, program);
-  player.drawExtents(gl, program);
 
   let hit = "green";
   //move landscape towards camera

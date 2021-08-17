@@ -91,13 +91,7 @@ export class Mesh {
   rMatrix: Matrix;
   buffer: WebGLBuffer;
   vbo: Float32Array;
-  /////////////////////////////////////////////
-  //remove
-  e_vbo: Float32Array;
-  bottomSegmentuffer: WebGLBuffer;
-  //remove
   bottomSegment: [DOMPoint, DOMPoint];
-  /////////////////////////////////////////////
   constructor(vertices: Vertex[], faces: Face[]) {
     this.vertices = vertices;
     this.faces = faces;
@@ -278,68 +272,6 @@ export class Mesh {
     }
     return JSON.stringify({ v, f, c });
   }
-
-  /////////////////////////////////////////////
-  //remove later
-  drawExtents = (gl: WebGLRenderingContext, program: WebGLProgram): void => {
-    //if vbo doesn't exist, create it and fill with polygon info
-    // if (!this.e_vbo) {
-    const mm = this.pMatrix.multiply(this.rMatrix);
-    const trans1 = this.bottomSegment[0].matrixTransform(mm);
-    const trans2 = this.bottomSegment[1].matrixTransform(mm);
-    this.e_vbo = new Float32Array([
-      trans1.x,
-      trans1.y,
-      trans1.z,
-      Red.r,
-      Red.g,
-      Red.b,
-      -10,
-      -10,
-      -10,
-      trans2.x,
-      trans2.y,
-      trans1.z,
-      Red.r,
-      Red.g,
-      Red.b,
-      -10,
-      -10,
-      -10,
-    ]);
-    this.bottomSegmentuffer = gl.createBuffer();
-    // }
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.bottomSegmentuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, this.e_vbo, gl.STATIC_DRAW);
-    const FSIZE = this.vbo.BYTES_PER_ELEMENT;
-
-    const position = gl.getAttribLocation(program, "position");
-    gl.vertexAttribPointer(position, 3, gl.FLOAT, false, FSIZE * 9, 0);
-    gl.enableVertexAttribArray(position);
-
-    const color = gl.getAttribLocation(program, "color");
-    gl.vertexAttribPointer(color, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 3);
-    gl.enableVertexAttribArray(color);
-
-    const normal = gl.getAttribLocation(program, "normal");
-    gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 6);
-    gl.enableVertexAttribArray(normal);
-
-    // Set the model matrix
-    const model = gl.getUniformLocation(program, "model");
-    const nMatrix = gl.getUniformLocation(program, "nMatrix");
-
-    const modelMatrix = new Matrix(); //this.pMatrix.multiply(this.rMatrix);
-    const normalMatrix = new Matrix(modelMatrix.toString());
-    normalMatrix.invertSelf();
-    normalMatrix.transposeSelf();
-
-    gl.uniformMatrix4fv(model, false, modelMatrix.toFloat32Array());
-    gl.uniformMatrix4fv(nMatrix, false, normalMatrix.toFloat32Array());
-
-    gl.drawArrays(gl.LINE_LOOP, 0, 2);
-  };
 
   intersect = (
     modelMatrix: DOMMatrix,

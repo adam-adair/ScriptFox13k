@@ -8,10 +8,9 @@ void main() {
   float fogFactor = (u_FogDist.y - v_dist) / (u_FogDist.y - u_FogDist.x);
   vec3 color = mix(u_FogColor, vec3(v_color), clamp(fogFactor, 0.0, 1.0));
   if ( v_position.z > 0.0 &&  v_position.z < 0.1) {
-  gl_FragColor = vec4(1,0,0, v_color.a);
-
+  // gl_FragColor = vec4(1,0,0, v_color.a);
+  gl_FragColor = vec4(color, v_color.a);
   } else {
-
   gl_FragColor = vec4(color, v_color.a);
   }
 }
