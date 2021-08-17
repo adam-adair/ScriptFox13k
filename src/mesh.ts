@@ -1,4 +1,4 @@
-import { Color, White } from "./colors";
+import { Color, Red, White } from "./colors";
 
 export class Matrix extends DOMMatrix {
   transposeSelf() {
@@ -91,6 +91,13 @@ export class Mesh {
   rMatrix: Matrix;
   buffer: WebGLBuffer;
   vbo: Float32Array;
+  /////////////////////////////////////////////
+  //remove
+  e_vbo: Float32Array;
+  bottomSegmentuffer: WebGLBuffer;
+  //remove
+  bottomSegment: [Vertex, Vertex];
+  /////////////////////////////////////////////
   constructor(vertices: Vertex[], faces: Face[]) {
     this.vertices = vertices;
     this.faces = faces;
@@ -98,6 +105,22 @@ export class Mesh {
     this.rMatrix = new Matrix();
     this.position = new Vertex(0, 0, 0);
     this.rotation = new Vertex(0, 0, 0);
+    const extents = {
+      x1: Infinity,
+      y1: Infinity,
+      x2: -Infinity,
+      y2: Infinity,
+    };
+    for (let i = 0; i < this.vertices.length; i++) {
+      const vert = this.vertices[i];
+      if (vert.x < extents.x1) extents.x1 = vert.x;
+      if (vert.y < extents.y1) extents.y1 = extents.y2 = vert.y;
+      if (vert.x > extents.x2) extents.x2 = vert.x;
+    }
+    this.bottomSegment = [
+      new Vertex(extents.x1, extents.y1, 0),
+      new Vertex(extents.x2, extents.y2, 0),
+    ];
   }
 
   static async fromSerialized(url: string): Promise<Mesh> {
@@ -160,7 +183,7 @@ export class Mesh {
     return new Mesh(vertices, faces);
   }
 
-  draw = (gl: WebGLRenderingContext, program: WebGLProgram): void => {
+  draw = (gl: WebGLRenderingContext, program: WebGLProgram): DOMMatrix => {
     //if vbo doesn't exist, create it and fill with polygon info
     if (!this.vbo) {
       const arr = [];
@@ -211,6 +234,7 @@ export class Mesh {
     gl.uniformMatrix4fv(nMatrix, false, normalMatrix.toFloat32Array());
 
     gl.drawArrays(gl.TRIANGLES, 0, this.faces.length * 3);
+    return modelMatrix;
   };
 
   rotate(x: number, y: number, z: number): void {
@@ -249,4 +273,98 @@ export class Mesh {
     }
     return JSON.stringify({ v, f, c });
   }
+
+  /////////////////////////////////////////////
+  //remove later
+  drawExtents = (gl: WebGLRenderingContext, program: WebGLProgram): void => {
+    //if vbo doesn't exist, create it and fill with polygon info
+    if (!this.e_vbo) {
+      this.e_vbo = new Float32Array([
+        this.bottomSegment[0].x,
+        this.bottomSegment[0].y,
+        0,
+        Red.r,
+        Red.g,
+        Red.b,
+        -10,
+        -10,
+        -10,
+        this.bottomSegment[1].x,
+        this.bottomSegment[1].y,
+        0,
+        Red.r,
+        Red.g,
+        Red.b,
+        -10,
+        -10,
+        -10,
+      ]);
+      this.bottomSegmentuffer = gl.createBuffer();
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bottomSegmentuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, this.e_vbo, gl.STATIC_DRAW);
+    const FSIZE = this.vbo.BYTES_PER_ELEMENT;
+
+    const position = gl.getAttribLocation(program, "position");
+    gl.vertexAttribPointer(position, 3, gl.FLOAT, false, FSIZE * 9, 0);
+    gl.enableVertexAttribArray(position);
+
+    const color = gl.getAttribLocation(program, "color");
+    gl.vertexAttribPointer(color, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 3);
+    gl.enableVertexAttribArray(color);
+
+    const normal = gl.getAttribLocation(program, "normal");
+    gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 6);
+    gl.enableVertexAttribArray(normal);
+
+    // Set the model matrix
+    const model = gl.getUniformLocation(program, "model");
+    const nMatrix = gl.getUniformLocation(program, "nMatrix");
+
+    const modelMatrix = this.pMatrix.multiply(this.rMatrix);
+    const normalMatrix = new Matrix(modelMatrix.toString());
+    normalMatrix.invertSelf();
+    normalMatrix.transposeSelf();
+
+    gl.uniformMatrix4fv(model, false, modelMatrix.toFloat32Array());
+    gl.uniformMatrix4fv(nMatrix, false, normalMatrix.toFloat32Array());
+
+    gl.drawArrays(gl.LINE_LOOP, 0, 2);
+  };
+  /////////////////////////////////////////////
+  turn = (
+    p1: { x: any; y: any },
+    p2: { x: any; y: any },
+    p3: { x: any; y: any }
+  ) => {
+    const a = p1.y;
+    const b = p1.x;
+    const c = p2.y;
+    const d = p2.x;
+    const e = p3.y;
+    const f = p3.x;
+    const A = (f - b) * (c - a);
+    const B = (d - b) * (e - a);
+    return A > B + Number.EPSILON ? 1 : A + Number.EPSILON < B ? -1 : 0;
+  };
+
+  //revise this to use matrices, factor in rotation, deal with being completely under the ground
+  intersect = (a: { x1: number; y1: number; x2: number; y2: number }) => {
+    //use matrices and get rotation
+    const b = {
+      x1: this.bottomSegment[0].x + this.position.x,
+      x2: this.bottomSegment[1].x + this.position.x,
+      y1: this.bottomSegment[0].y + this.position.y,
+      y2: this.bottomSegment[1].y + this.position.y,
+    };
+    const p1 = { x: a.x1, y: a.y1 };
+    const p2 = { x: a.x2, y: a.y2 };
+    const p3 = { x: b.x1, y: b.y1 };
+    const p4 = { x: b.x2, y: b.y2 };
+    return (
+      this.turn(p1, p3, p4) != this.turn(p2, p3, p4) &&
+      this.turn(p1, p2, p3) != this.turn(p1, p2, p4)
+    );
+  };
 }

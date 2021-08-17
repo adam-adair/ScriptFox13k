@@ -7,6 +7,7 @@ uniform mat4 nMatrix;
 uniform vec3 light;
 uniform vec3 ambientLight;
 varying vec4 v_color;
+varying vec3 v_position;
 varying float v_dist;
 void main() {
   gl_Position = camera * model * position;
@@ -15,6 +16,9 @@ void main() {
   float nDotL = dot(wNormal, lightDirection);
   vec3 ambient = ambientLight * color.rgb;
   vec3 diffuse = color.rgb * nDotL;
+  // Set varying position for the fragment shader
+  v_position = vec3(model * position);
+  // remove
   v_color = vec4(diffuse + ambient, 1.0);
   v_dist = gl_Position.w;
 }

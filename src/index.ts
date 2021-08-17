@@ -23,6 +23,9 @@ const {
   fogDistance,
 } = constants;
 
+// const start = document.getElementById("start");
+const start = document.body;
+
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const playerInput: PlayerMovement = {
   spinL: false,
@@ -48,9 +51,19 @@ const fs_source = require("./glsl/fshader.glsl") as string;
 let gl: WebGLRenderingContext;
 let program: WebGLProgram;
 let landscape: LandscapeSquare[] = [];
-let inp = "";
 let enemies: Mesh[] = [];
 let player: Mesh;
+
+//check if line segments intersect
+// const intersect = (
+//   a: { x1: number; y1: number; x2: number; y2: number },
+//   b: { x1: number; y1: number; x2: number; y2: number }
+// ) => {
+//   return (
+//     Turn(p1, p3, p4) != Turn(p2, p3, p4) && Turn(p1, p2, p3) != Turn(p1, p2, p4)
+//   );
+//   // return true;
+// };
 
 const init = async () => {
   //initialize webgl
@@ -86,8 +99,16 @@ const init = async () => {
   cameraMatrix.translateSelf(0, 0, -zoom * 2);
 
   // for ortho view:
-  // const cameraMatrix = orthogonal(zoom * ratio, zoom, 100);
-  // cameraMatrix.translateSelf((zoom * ratio) / 2, -zoom / 2, -zoom);
+  // const cameraMatrix = orthogonal(
+  //   (zoom * canvas.width) / canvas.height,
+  //   zoom,
+  //   100
+  // );
+  // cameraMatrix.translateSelf(
+  //   (zoom * canvas.width) / canvas.height / 2,
+  //   -zoom / 2,
+  //   -zoom
+  // );
 
   gl.uniformMatrix4fv(camera, false, cameraMatrix.toFloat32Array());
 
@@ -120,7 +141,7 @@ const init = async () => {
   enemies.push(new Cube(0.2));
 
   // player = new Cube(0.3, Red);
-  player.translate(0, -2, 0);
+  // player.translate(0, scapeY / 2, 0);
   player.rotate(0, 180, 0);
 
   for (let i = 0; i < scapeRows; i++) {
@@ -143,21 +164,23 @@ const init = async () => {
       const square = new LandscapeSquare(scapeOptions);
 
       square.translate(j * scapeWidth, scapeY, -i * scapeWidth);
-      square.translate(-scapeWidth * scapeCols * 0.5, 0, 0);
+      square.translate(-scapeWidth * scapeCols * 0.5, 0, -10);
       landscape.push(square);
     }
   }
   requestAnimationFrame(loop);
 };
-
 //game loop
 const loop = () => {
   //clear screen
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  //box movement
+  //player movement
   movePlayer(player, playerInput, movement);
-  inp = "";
+  //draw player
+  const modelMatrix = player.draw(gl, program);
+  player.drawExtents(gl, program);
 
+  let hit = "green";
   //move landscape towards camera
   for (let i = 0; i < landscape.length; i++) {
     const square = landscape[i];
@@ -179,7 +202,7 @@ const loop = () => {
         const newSquare = new LandscapeSquare(scapeOptions);
         newSquare.translate(
           j * scapeWidth,
-          -2.5,
+          scapeY,
           squareInFront.position.z - scapeWidth
         );
         newSquare.translate(-scapeWidth * scapeCols * 0.5, 0, 0);
@@ -188,7 +211,25 @@ const loop = () => {
       //remove front row square
       landscape.splice(i, scapeCols);
     }
+    //check landscape for intersect with player
+    if (square.position.z > 0 && square.position.z < scapeWidth) {
+      //get line based on interpolating sides
+      const fraction = square.position.z / scapeWidth;
+      const segment = {
+        x1: square.position.x,
+        y1: square.position.y + square.fl - (square.fl - square.bl) * fraction,
+        x2: square.position.x + scapeWidth,
+        y2: square.position.y + square.fr - (square.fr - square.br) * fraction,
+      };
+      //check line against player extents
+      // console.log(player.bottomSegment);
+      if (player.intersect(segment)) {
+        hit = "red";
+      } else {
+      }
+    }
   }
+  start.style.background = hit;
 
   // draw enemies
   for (let i = 0; i < enemies.length; i++) {
@@ -199,40 +240,35 @@ const loop = () => {
     enemy.draw(gl, program);
   }
 
-  //draw player
-
-  player.draw(gl, program);
   requestAnimationFrame(loop);
 };
 
 window.onload = () => {
   canvas.width = 640; //document.body.clientWidth;
   canvas.height = 480; //document.body.clientHeight;
-};
-
-const startMusic = () => {
-  const cPlayer = new CPlayer();
-  cPlayer.init(song);
-  cPlayer.generate();
-  var done = false;
-  setInterval(function () {
-    if (done) {
-      return;
-    }
-
-    done = cPlayer.generate() >= 1;
-
-    if (done) {
-      // Put the generated song in an Audio element.
-      var wave = cPlayer.createWave();
-      var audio = document.createElement("audio");
-      audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
-      audio.play();
-      audio.loop = true;
-    }
-  }, 0);
-
   init();
 };
 
-document.getElementById("start").onclick = startMusic;
+const startMusic = () => {
+  // const cPlayer = new CPlayer();
+  // cPlayer.init(song);
+  // cPlayer.generate();
+  // var done = false;
+  // setInterval(function () {
+  //   if (done) {
+  //     return;
+  //   }
+  //   done = cPlayer.generate() >= 1;
+  //   if (done) {
+  //     // Put the generated song in an Audio element.
+  //     var wave = cPlayer.createWave();
+  //     var audio = document.createElement("audio");
+  //     audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
+  //     audio.play();
+  //     audio.loop = true;
+  //   }
+  // }, 0);
+  // init();
+};
+
+//.onclick = startMusic;
