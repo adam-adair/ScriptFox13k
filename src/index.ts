@@ -5,7 +5,7 @@ import { Red } from "./colors";
 import { Cube } from "./cube";
 import { Mesh } from "./mesh";
 import { LandscapeSquare, scapeOptions } from "./landscapeSquare";
-import { handleInput, GameInput } from "./input";
+import { handleInput } from "./input";
 import { Enemy } from "./enemy";
 import { Player } from "./player";
 import {
@@ -19,15 +19,16 @@ import {
   scapeWidth,
   scapeHeight,
   movement,
-  disappearingPoint,
+  disappearNear,
   scapeY,
   fogDistance,
+  disappearFar,
 } from "./constants";
+import { Bullet } from "./bullet";
 
 const start = document.getElementById("start");
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const gameInput = new GameInput();
 
 //shader source
 const vs_source = require("./glsl/vshader.glsl") as string;
@@ -37,6 +38,7 @@ let gl: WebGLRenderingContext;
 let program: WebGLProgram;
 let landscape: LandscapeSquare[] = [];
 let enemies: Enemy[] = [];
+let bullets: Bullet[] = [];
 let player: Player;
 let lastTime: number;
 
@@ -177,7 +179,10 @@ const loop = (time: number) => {
   //clear screen
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   //player movement
-  player.respondToInput();
+  const bullet = player.respondToInput();
+  if (bullet) {
+    bullets.push(bullet);
+  }
   //draw player
   player.draw(gl, program);
 
@@ -188,7 +193,7 @@ const loop = (time: number) => {
     square.translate(0, 0, scapeSpeed);
     square.draw(gl, program);
     //if square has disappeared
-    if (square.position.z > disappearingPoint) {
+    if (square.position.z > disappearNear) {
       //add squares to the back
       const lastRow = landscape.slice(-scapeCols);
       for (let j = 0; j < lastRow.length; j++) {
@@ -239,6 +244,14 @@ const loop = (time: number) => {
     //make enemy spin
     enemy.rotate(0.5, 0, 0);
     enemy.draw(gl, program);
+  }
+
+  // draw bullets
+  for (let i = 0; i < bullets.length; i++) {
+    const bullet = bullets[i];
+    bullet.draw(gl, program);
+    if (bullet.position.z < disappearFar || bullet.position.z > disappearNear)
+      bullets.splice(i, 1);
   }
 
   requestAnimationFrame(loop);

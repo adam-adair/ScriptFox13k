@@ -1,6 +1,7 @@
 import { Mesh, MeshInfo } from "./mesh";
 import { rotationSpeed, rotationRecovery, bounds, movement } from "./constants";
 import { GameInput } from "./input";
+import { Bullet } from "./bullet";
 export class Player extends Mesh {
   gameInput: GameInput;
   atBounds: boolean;
@@ -44,7 +45,14 @@ export class Player extends Mesh {
   }
 
   fire() {
-    console.log(this.rotation);
+    // console.log(this.rotation);
+    const bullet = new Bullet();
+    bullet.translate(
+      this.position.x,
+      this.position.y,
+      this.position.z - this.boundingBox[4].z
+    );
+    return bullet;
   }
 
   respondToInput() {
@@ -55,8 +63,8 @@ export class Player extends Mesh {
     if (this.gameInput.spinR) this.rotate(0, 0, -rotationSpeed * 5);
     if (this.gameInput.spinL) this.rotate(0, 0, rotationSpeed * 5);
     if (this.gameInput.fire && this.gameInput.canFire) {
-      this.fire();
       this.gameInput.canFire = false;
+      return this.fire();
     }
   }
 }

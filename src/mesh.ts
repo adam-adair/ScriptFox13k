@@ -97,7 +97,7 @@ export class Mesh {
   modelMatrix: DOMMatrix;
   buffer: WebGLBuffer;
   vbo: Float32Array;
-  bottomSegment: [DOMPoint, DOMPoint];
+  boundingBox: DOMPoint[];
   constructor({ vertices, faces }: MeshInfo) {
     this.vertices = vertices;
     this.faces = faces;
@@ -123,9 +123,15 @@ export class Mesh {
       if (vert.y > extents.y2) extents.y2 = vert.y;
       if (vert.z > extents.z2) extents.z2 = vert.z;
     }
-    this.bottomSegment = [
+    this.boundingBox = [
       new DOMPoint(extents.x1, extents.y1, extents.z1),
       new DOMPoint(extents.x2, extents.y1, extents.z1),
+      new DOMPoint(extents.x1, extents.y2, extents.z1),
+      new DOMPoint(extents.x1, extents.y2, extents.z1),
+      new DOMPoint(extents.x1, extents.y1, extents.z2),
+      new DOMPoint(extents.x2, extents.y1, extents.z2),
+      new DOMPoint(extents.x1, extents.y2, extents.z2),
+      new DOMPoint(extents.x1, extents.y2, extents.z2),
     ];
   }
 
@@ -288,8 +294,8 @@ export class Mesh {
   }
 
   intersect = (a: { x1: number; y1: number; x2: number; y2: number }) => {
-    const trans1 = this.bottomSegment[1].matrixTransform(this.modelMatrix);
-    const trans2 = this.bottomSegment[0].matrixTransform(this.modelMatrix);
+    const trans1 = this.boundingBox[1].matrixTransform(this.modelMatrix);
+    const trans2 = this.boundingBox[0].matrixTransform(this.modelMatrix);
     //use matrices and get rotation
     const b = {
       x1: trans1.x,
