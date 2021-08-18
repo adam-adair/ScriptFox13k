@@ -82,6 +82,11 @@ export class Face {
   }
 }
 
+export type MeshInfo = {
+  vertices: Vertex[];
+  faces: Face[];
+};
+
 export class Mesh {
   vertices: Vertex[];
   position: Vertex;
@@ -89,14 +94,16 @@ export class Mesh {
   faces: Face[];
   pMatrix: Matrix;
   rMatrix: Matrix;
+  modelMatrix: DOMMatrix;
   buffer: WebGLBuffer;
   vbo: Float32Array;
   bottomSegment: [DOMPoint, DOMPoint];
-  constructor(vertices: Vertex[], faces: Face[]) {
+  constructor({ vertices, faces }: MeshInfo) {
     this.vertices = vertices;
     this.faces = faces;
     this.pMatrix = new Matrix();
     this.rMatrix = new Matrix();
+    this.modelMatrix = new DOMMatrix();
     this.position = new Vertex(0, 0, 0);
     this.rotation = new Vertex(0, 0, 0);
     const extents = {
@@ -122,7 +129,7 @@ export class Mesh {
     ];
   }
 
-  static async fromSerialized(url: string): Promise<Mesh> {
+  static async fromSerialized(url: string): Promise<MeshInfo> {
     const res = await fetch(url);
     const obj = await res.json();
     const vertices: Vertex[] = [];
@@ -139,14 +146,14 @@ export class Mesh {
     for (let i = 0; i < f.length; i += 4) {
       faces.push(new Face(f[i], f[i + 1], f[i + 2], colors[f[i + 3]]));
     }
-    return new Mesh(vertices, faces);
+    return { vertices, faces };
   }
 
   static async fromObjMtl(
     url: string,
     mtlUrl: string,
     scale: number
-  ): Promise<Mesh> {
+  ): Promise<MeshInfo> {
     const res = await fetch(url);
     const objArr = (await res.text()).split("\n");
     const mtlRes = await fetch(mtlUrl);
@@ -179,10 +186,10 @@ export class Mesh {
         faces.push(new Face(A, B, C, Colors[currentCol]));
       }
     }
-    return new Mesh(vertices, faces);
+    return { vertices, faces };
   }
 
-  draw = (gl: WebGLRenderingContext, program: WebGLProgram): DOMMatrix => {
+  draw(gl: WebGLRenderingContext, program: WebGLProgram): void {
     //if vbo doesn't exist, create it and fill with polygon info
     if (!this.vbo) {
       const arr = [];
@@ -224,21 +231,28 @@ export class Mesh {
     const model = gl.getUniformLocation(program, "model");
     const nMatrix = gl.getUniformLocation(program, "nMatrix");
 
-    const modelMatrix = this.pMatrix.multiply(this.rMatrix);
-    const normalMatrix = new Matrix(modelMatrix.toString());
+    this.modelMatrix = this.pMatrix.multiply(this.rMatrix);
+    const normalMatrix = new Matrix(this.modelMatrix.toString());
     normalMatrix.invertSelf();
     normalMatrix.transposeSelf();
 
-    gl.uniformMatrix4fv(model, false, modelMatrix.toFloat32Array());
+    gl.uniformMatrix4fv(model, false, this.modelMatrix.toFloat32Array());
     gl.uniformMatrix4fv(nMatrix, false, normalMatrix.toFloat32Array());
 
     gl.drawArrays(gl.TRIANGLES, 0, this.faces.length * 3);
-    return modelMatrix;
-  };
+  }
 
   rotate(x: number, y: number, z: number): void {
-    this.rotation = this.rotation.subtract(new Vertex(-x, -y, -z));
-    this.rMatrix.rotateSelf(x, y, z);
+    // this.rotation = this.rotation.subtract(new Vertex(-x, -y, -z));
+    this.rotation.x = (this.rotation.x + 360 + x) % 360;
+    this.rotation.y = (this.rotation.y + 360 + y) % 360;
+    this.rotation.z = (this.rotation.z + 360 + z) % 360;
+    this.rMatrix = new Matrix();
+    this.rMatrix.rotateSelf(
+      -this.rotation.x,
+      -this.rotation.y,
+      this.rotation.z
+    );
   }
 
   translate(x: number, y: number, z: number): void {
@@ -273,12 +287,9 @@ export class Mesh {
     return JSON.stringify({ v, f, c });
   }
 
-  intersect = (
-    modelMatrix: DOMMatrix,
-    a: { x1: number; y1: number; x2: number; y2: number }
-  ) => {
-    const trans1 = this.bottomSegment[1].matrixTransform(modelMatrix);
-    const trans2 = this.bottomSegment[0].matrixTransform(modelMatrix);
+  intersect = (a: { x1: number; y1: number; x2: number; y2: number }) => {
+    const trans1 = this.bottomSegment[1].matrixTransform(this.modelMatrix);
+    const trans2 = this.bottomSegment[0].matrixTransform(this.modelMatrix);
     //use matrices and get rotation
     const b = {
       x1: trans1.x,

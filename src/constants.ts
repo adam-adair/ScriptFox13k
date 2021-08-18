@@ -1,15 +1,16 @@
-export const constants = {
-  clearColor: { r: 0, g: 0.2, b: 0.2, a: 1 },
-  zoom: 10,
-  lightDirection: { x: 0, y: 4, z: 10 },
-  ambientLightAmount: 0.1,
-  scapeWidth: 4,
-  scapeHeight: 1,
-  scapeCols: 8,
-  scapeRows: 16,
-  scapeSpeed: 0.1,
-  scapeY: -2.5,
-  movement: 0.2,
-  disappearingPoint: 20,
-  fogDistance: [45, 60],
-};
+export const clearColor = { r: 0, g: 0.2, b: 0.2, a: 1 };
+export const zoom = 10;
+export const lightDirection = { x: 0, y: 4, z: 10 };
+export const ambientLightAmount = 0.1;
+export const scapeWidth = 4;
+export const scapeHeight = 1;
+export const scapeCols = 8;
+export const scapeRows = 16;
+export const scapeSpeed = 0.1;
+export const scapeY = -2.5;
+export const movement = 0.2;
+export const disappearingPoint = 20;
+export const fogDistance = [45, 60];
+export const rotationSpeed = 1;
+export const rotationRecovery = 4;
+export const bounds = { left: -4, right: 4, top: 3 };

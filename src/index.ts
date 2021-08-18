@@ -3,11 +3,12 @@ import { song } from "../music/song";
 import { perspective, orthogonal } from "./camera";
 import { Red } from "./colors";
 import { Cube } from "./cube";
-import { constants } from "./constants";
 import { Mesh } from "./mesh";
 import { LandscapeSquare, scapeOptions } from "./landscapeSquare";
-import { movePlayer, handleInput, PlayerMovement } from "./input";
-const {
+import { handleInput, GameInput } from "./input";
+import { Enemy } from "./enemy";
+import { Player } from "./player";
+import {
   clearColor,
   zoom,
   lightDirection,
@@ -21,27 +22,12 @@ const {
   disappearingPoint,
   scapeY,
   fogDistance,
-} = constants;
+} from "./constants";
 
 const start = document.getElementById("start");
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const playerInput: PlayerMovement = {
-  spinL: false,
-  spinR: false,
-  up: false,
-  down: false,
-  right: false,
-  left: false,
-  in: false,
-  out: false,
-  spinI: false,
-  spinO: false,
-  spinU: false,
-  spinD: false,
-};
-document.onkeydown = (ev) => handleInput(ev, true, playerInput);
-document.onkeyup = (ev) => handleInput(ev, false, playerInput);
+const gameInput = new GameInput();
 
 //shader source
 const vs_source = require("./glsl/vshader.glsl") as string;
@@ -50,8 +36,8 @@ const fs_source = require("./glsl/fshader.glsl") as string;
 let gl: WebGLRenderingContext;
 let program: WebGLProgram;
 let landscape: LandscapeSquare[] = [];
-let enemies: Mesh[] = [];
-let player: Mesh;
+let enemies: Enemy[] = [];
+let player: Player;
 let lastTime: number;
 
 //check if line segments intersect
@@ -136,9 +122,21 @@ const init = async () => {
   gl.uniform2fv(u_FogDist, a_fogDist);
 
   // set up some objects
-  player = await Mesh.fromObjMtl("./obj/ship3.obj", "./obj/ship3.mtl", 0.05);
-  // player = await Mesh.fromSerialized("./models/ship.json");
-  enemies.push(new Cube(0.2));
+  player = new Player(
+    await Mesh.fromSerialized("./models/player.json")
+    // await Mesh.fromObjMtl("./obj/ship3.obj", "./obj/ship3.mtl", 0.05)
+  );
+  document.onkeydown = (ev) => handleInput(ev, true, player);
+  document.onkeyup = (ev) => handleInput(ev, false, player);
+
+  const enemy = new Enemy(
+    await Mesh.fromSerialized("./models/enemy.json")
+    // await Mesh.fromObjMtl("./obj/enemy.obj", "./obj/enemy.mtl", 1)
+  );
+  // console.log(enemy.serialize(2));
+  enemy.rotate(0, -90, 90);
+  enemy.translate(0, 0, -10);
+  enemies.push(enemy);
 
   // player = new Cube(0.3, Red);
   // player.translate(0, scapeY / 2, 0);
@@ -179,9 +177,9 @@ const loop = (time: number) => {
   //clear screen
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   //player movement
-  movePlayer(player, playerInput, movement);
+  player.respondToInput();
   //draw player
-  const modelMatrix = player.draw(gl, program);
+  player.draw(gl, program);
 
   let hit = "green";
   //move landscape towards camera
@@ -225,8 +223,7 @@ const loop = (time: number) => {
         y2: square.position.y + square.fr - (square.fr - square.br) * fraction,
       };
       //check line against player extents
-      // console.log(player.bottomSegment);
-      if (player.intersect(modelMatrix, segment)) {
+      if (player.intersect(segment)) {
         player.translate(0, movement, 0);
         hit = "red";
       } else {
@@ -240,7 +237,7 @@ const loop = (time: number) => {
     //create gl buffer of vertex positions/colors and bind to object's vbuffer
     const enemy = enemies[i];
     //make enemy spin
-    enemy.rotate(0.5, 0.5, 0.5);
+    enemy.rotate(0.5, 0, 0);
     enemy.draw(gl, program);
   }
 
@@ -272,7 +269,7 @@ const startMusic = () => {
       audio.loop = true;
     }
   }, 0);
-  init();
+  // init();
 };
 
-// start.onclick = startMusic;
+start.onclick = startMusic;

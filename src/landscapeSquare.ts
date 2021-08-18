@@ -37,7 +37,7 @@ export class LandscapeSquare extends Mesh {
       vCi: 2,
       color: scapeOptions.color ? scapeOptions.color : Green,
     };
-    super(vertices, faces);
+    super({ vertices, faces });
     this.fl = fl;
     this.fr = fr;
     this.bl = bl;

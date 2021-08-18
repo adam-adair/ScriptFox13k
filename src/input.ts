@@ -1,92 +1,55 @@
-import { Mesh } from "./mesh";
+import { Player } from "./player";
+import { rotationSpeed } from "./constants";
 
-export interface PlayerMovement {
-  up: boolean;
-  left: boolean;
-  down: boolean;
-  in: boolean;
-  out: boolean;
-  right: boolean;
-  spinR: boolean;
-  spinL: boolean;
-  spinU: boolean;
-  spinD: boolean;
-  spinI: boolean;
-  spinO: boolean;
+export class GameInput {
+  up = false;
+  left = false;
+  down = false;
+  in = false;
+  out = false;
+  right = false;
+  fire = false;
+  canFire = true;
+  spinR = false;
+  spinL = false;
 }
 
 export const handleInput = (
   ev: KeyboardEvent,
   pressed: boolean,
-  inp: PlayerMovement
+  player: Player
 ) => {
   switch (ev.key) {
     case "w":
-      inp.up = pressed;
+      player.gameInput.up = pressed;
       ev.preventDefault();
       break;
     case "a":
-      inp.left = pressed;
+      player.gameInput.left = pressed;
       ev.preventDefault();
       break;
     case "s":
-      inp.down = pressed;
+      player.gameInput.down = pressed;
       ev.preventDefault();
       break;
     case "d":
-      inp.right = pressed;
-      ev.preventDefault();
-      break;
-    // case "q":
-    //   inp.in = pressed;
-    //   ev.preventDefault();
-    //   break;
-    // case "e":
-    //   inp.out = pressed;
-    //   ev.preventDefault();
-    //   break;
-    case "r":
-      inp.spinR = pressed;
-      ev.preventDefault();
-      break;
-    case "f":
-      inp.spinL = pressed;
-      ev.preventDefault();
-      break;
-    case "t":
-      inp.spinU = pressed;
-      ev.preventDefault();
-      break;
-    case "g":
-      inp.spinD = pressed;
+      player.gameInput.right = pressed;
       ev.preventDefault();
       break;
     case "e":
-      inp.spinI = pressed;
+      player.gameInput.spinR = pressed;
       ev.preventDefault();
       break;
     case "q":
-      inp.spinO = pressed;
+      player.gameInput.spinL = pressed;
+      ev.preventDefault();
+      break;
+    case " ":
+      if (!pressed) {
+        player.gameInput.canFire = true;
+      }
+      player.gameInput.fire = pressed;
       ev.preventDefault();
       break;
   }
-};
-
-export const movePlayer = (
-  player: Mesh,
-  inp: PlayerMovement,
-  movement: number
-) => {
-  if (inp.up) player.translate(0, movement, 0);
-  if (inp.down) player.translate(0, -movement, 0);
-  if (inp.left) player.translate(-movement, 0, 0);
-  if (inp.right) player.translate(movement, 0, 0);
-  // if (inp.in) player.translate(0, 0, -movement);
-  // if (inp.out) player.translate(0, 0, movement);
-  // if (inp.spinL) player.rotate(movement * 10, 0, 0);
-  // if (inp.spinR) player.rotate(movement * -10, 0, 0);
-  // if (inp.spinU) player.rotate(0, movement * 10, 0);
-  // if (inp.spinD) player.rotate(0, movement * -10, 0);
-  if (inp.spinI) player.rotate(0, 0, movement * 40);
-  if (inp.spinO) player.rotate(0, 0, movement * -40);
 };
