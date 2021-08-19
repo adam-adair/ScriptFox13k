@@ -81,6 +81,17 @@ export class Face {
     this.color = color;
   }
 }
+// facing box: front/back,left/right, top/bottom
+export class BoundingBox {
+  flb: DOMPoint;
+  frb: DOMPoint;
+  flt: DOMPoint;
+  frt: DOMPoint;
+  blb: DOMPoint;
+  brb: DOMPoint;
+  blt: DOMPoint;
+  brt: DOMPoint;
+}
 
 export type MeshInfo = {
   vertices: Vertex[];
@@ -97,7 +108,7 @@ export class Mesh {
   modelMatrix: DOMMatrix;
   buffer: WebGLBuffer;
   vbo: Float32Array;
-  boundingBox: DOMPoint[];
+  boundingBox: BoundingBox;
   constructor({ vertices, faces }: MeshInfo) {
     this.vertices = vertices;
     this.faces = faces;
@@ -123,16 +134,16 @@ export class Mesh {
       if (vert.y > extents.y2) extents.y2 = vert.y;
       if (vert.z > extents.z2) extents.z2 = vert.z;
     }
-    this.boundingBox = [
-      new DOMPoint(extents.x1, extents.y1, extents.z1),
-      new DOMPoint(extents.x2, extents.y1, extents.z1),
-      new DOMPoint(extents.x1, extents.y2, extents.z1),
-      new DOMPoint(extents.x1, extents.y2, extents.z1),
-      new DOMPoint(extents.x1, extents.y1, extents.z2),
-      new DOMPoint(extents.x2, extents.y1, extents.z2),
-      new DOMPoint(extents.x1, extents.y2, extents.z2),
-      new DOMPoint(extents.x1, extents.y2, extents.z2),
-    ];
+    this.boundingBox = {
+      flb: new DOMPoint(extents.x1, extents.y1, extents.z1),
+      frb: new DOMPoint(extents.x2, extents.y1, extents.z1),
+      flt: new DOMPoint(extents.x1, extents.y2, extents.z1),
+      frt: new DOMPoint(extents.x2, extents.y2, extents.z1),
+      blb: new DOMPoint(extents.x1, extents.y1, extents.z2),
+      brb: new DOMPoint(extents.x2, extents.y1, extents.z2),
+      blt: new DOMPoint(extents.x1, extents.y2, extents.z2),
+      brt: new DOMPoint(extents.x2, extents.y2, extents.z2),
+    };
   }
 
   static async fromSerialized(url: string): Promise<MeshInfo> {
@@ -294,8 +305,8 @@ export class Mesh {
   }
 
   intersect = (a: { x1: number; y1: number; x2: number; y2: number }) => {
-    const trans1 = this.boundingBox[1].matrixTransform(this.modelMatrix);
-    const trans2 = this.boundingBox[0].matrixTransform(this.modelMatrix);
+    const trans1 = this.boundingBox.flb.matrixTransform(this.modelMatrix);
+    const trans2 = this.boundingBox.frb.matrixTransform(this.modelMatrix);
     //use matrices and get rotation
     const b = {
       x1: trans1.x,

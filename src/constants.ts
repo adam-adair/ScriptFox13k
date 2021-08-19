@@ -20,3 +20,4 @@ export const bulletInfo = {
   speed: 0.5,
   rotation: 10,
 };
+export const enemyBulletDelay = 1000;

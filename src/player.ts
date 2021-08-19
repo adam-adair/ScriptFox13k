@@ -2,13 +2,16 @@ import { Mesh, MeshInfo } from "./mesh";
 import { rotationSpeed, rotationRecovery, bounds, movement } from "./constants";
 import { GameInput } from "./input";
 import { Bullet } from "./bullet";
+import { Red, White, Yellow } from "./colors";
 export class Player extends Mesh {
   gameInput: GameInput;
   atBounds: boolean;
-  constructor(meshInfo: MeshInfo) {
+  bullets: Bullet[];
+  constructor(meshInfo: MeshInfo, bullets: Bullet[]) {
     super(meshInfo);
     this.atBounds = false;
     this.gameInput = new GameInput();
+    this.bullets = bullets;
   }
   translate(x: number, y: number, z: number) {
     if (
@@ -23,7 +26,7 @@ export class Player extends Mesh {
     } else this.atBounds = true;
   }
 
-  draw(gl: WebGLRenderingContext, program: WebGLProgram): void {
+  update() {
     //get player back to 0 rotation
     if (
       this.rotation.z < 180 &&
@@ -40,19 +43,16 @@ export class Player extends Mesh {
     ) {
       this.rotate(0, 0, rotationRecovery);
     }
-
-    super.draw(gl, program);
   }
 
   fire() {
-    // console.log(this.rotation);
-    const bullet = new Bullet();
+    const bullet = new Bullet([Red, Yellow, White, Yellow], 1);
     bullet.translate(
       this.position.x,
       this.position.y,
-      this.position.z - this.boundingBox[4].z
+      this.position.z - this.boundingBox.blt.z
     );
-    return bullet;
+    this.bullets.push(bullet);
   }
 
   respondToInput() {

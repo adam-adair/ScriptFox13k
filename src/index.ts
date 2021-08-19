@@ -125,15 +125,17 @@ const init = async () => {
 
   // set up some objects
   player = new Player(
-    await Mesh.fromSerialized("./models/player.json")
+    await Mesh.fromSerialized("./models/player.json"),
     // await Mesh.fromObjMtl("./obj/ship3.obj", "./obj/ship3.mtl", 0.05)
+    bullets
   );
   document.onkeydown = (ev) => handleInput(ev, true, player);
   document.onkeyup = (ev) => handleInput(ev, false, player);
 
   const enemy = new Enemy(
-    await Mesh.fromSerialized("./models/enemy.json")
+    await Mesh.fromSerialized("./models/enemy.json"),
     // await Mesh.fromObjMtl("./obj/enemy.obj", "./obj/enemy.mtl", 1)
+    bullets
   );
   // console.log(enemy.serialize(2));
   enemy.rotate(0, -90, 90);
@@ -179,11 +181,10 @@ const loop = (time: number) => {
   //clear screen
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   //player movement
-  const bullet = player.respondToInput();
-  if (bullet) {
-    bullets.push(bullet);
-  }
+  player.respondToInput();
+
   //draw player
+  player.update();
   player.draw(gl, program);
 
   let hit = "green";
@@ -243,12 +244,14 @@ const loop = (time: number) => {
     const enemy = enemies[i];
     //make enemy spin
     enemy.rotate(0.5, 0, 0);
+    enemy.update(time);
     enemy.draw(gl, program);
   }
-
+  // console.log(bullets);
   // draw bullets
   for (let i = 0; i < bullets.length; i++) {
     const bullet = bullets[i];
+    bullet.update();
     bullet.draw(gl, program);
     if (bullet.position.z < disappearFar || bullet.position.z > disappearNear)
       bullets.splice(i, 1);
