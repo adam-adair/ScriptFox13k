@@ -1,5 +1,5 @@
-import { Color } from "./colors";
-import { Mesh, Vertex, Face } from "./mesh";
+import { Color } from "./core/colors";
+import { Mesh, Vertex, Face } from "./core/mesh";
 export class Cube extends Mesh {
   constructor(d: number, color?: Color) {
     const vertices = [];

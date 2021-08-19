@@ -1,4 +1,4 @@
-import { Color, Red, White } from "./colors";
+import { Color, White } from "./colors";
 
 export class Matrix extends DOMMatrix {
   transposeSelf() {

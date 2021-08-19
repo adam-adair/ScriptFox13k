@@ -1,5 +1,4 @@
-import { Player } from "./player";
-import { rotationSpeed } from "./constants";
+import { Player } from "../gameObjects/player";
 
 export class GameInput {
   up = false;
