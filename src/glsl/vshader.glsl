@@ -6,9 +6,18 @@ uniform mat4 model;
 uniform mat4 nMatrix;
 uniform vec3 light;
 uniform vec3 ambientLight;
+//////////
+// guide: https://www.chinedufn.com/webgl-shadow-mapping-tutorial/
+uniform mat4 lightMatrix;
+varying vec4 shadowPos;
+////////////
 varying vec4 v_color;
 varying float v_dist;
 void main() {
+  ////////////
+  const mat4 texUnitConverter = mat4(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.5, 0.5, 1.0);
+  shadowPos = texUnitConverter * lightMatrix * model * position;
+  /////////////////////
   gl_Position = camera * model * position;
   vec3 wNormal = normalize(mat3(nMatrix) * normal.xyz);
   vec3 lightDirection = normalize(light - vec3(model * position));

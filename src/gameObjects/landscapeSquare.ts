@@ -94,7 +94,7 @@ export class LandscapeSquare extends GameObject {
         y2: this.mesh.position.y + this.fr - (this.fr - this.br) * fraction,
       };
       //check line against player extents
-      if (this.game.player.mesh.intersect(segment)) {
+      if (this.game.player.mesh.floorIntersect(segment)) {
         this.game.player.translate(0, playerSpeed, 0);
       } else {
       }

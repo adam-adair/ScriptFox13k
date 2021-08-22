@@ -246,7 +246,13 @@ export class Mesh {
     return { vertices, faces };
   }
 
-  draw(gl: WebGLRenderingContext, program: WebGLProgram): void {
+  draw(
+    gl: WebGLRenderingContext,
+    program: WebGLProgram,
+    samplerUniform: WebGLUniformLocation,
+    shadowDepthTexture: WebGLTexture,
+    shadow = false
+  ): void {
     //if vbo doesn't exist, create it and fill with polygon info
     if (!this.vbo) {
       const arr = [];
@@ -280,22 +286,27 @@ export class Mesh {
     const position = gl.getAttribLocation(program, "position");
     gl.vertexAttribPointer(position, 3, gl.FLOAT, false, FSIZE * 9, 0);
     gl.enableVertexAttribArray(position);
+    if (!shadow) {
+      const color = gl.getAttribLocation(program, "color");
+      gl.vertexAttribPointer(color, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 3);
+      gl.enableVertexAttribArray(color);
 
-    const color = gl.getAttribLocation(program, "color");
-    gl.vertexAttribPointer(color, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 3);
-    gl.enableVertexAttribArray(color);
+      const normal = gl.getAttribLocation(program, "normal");
+      //color doesn't exist on sprogram
+      gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 6);
+      gl.enableVertexAttribArray(normal);
 
-    const normal = gl.getAttribLocation(program, "normal");
-    //color doesn't exist on sprogram
-    gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 6);
-    gl.enableVertexAttribArray(normal);
+      // Set the normal matrix
+      const nMatrix = gl.getUniformLocation(program, "nMatrix");
+      gl.uniformMatrix4fv(nMatrix, false, normalMatrix.toFloat32Array());
 
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, shadowDepthTexture);
+      gl.uniform1i(samplerUniform, 0);
+    }
     // Set the model matrix
     const model = gl.getUniformLocation(program, "model");
-    const nMatrix = gl.getUniformLocation(program, "nMatrix");
-
     gl.uniformMatrix4fv(model, false, this.modelMatrix.toFloat32Array());
-    gl.uniformMatrix4fv(nMatrix, false, normalMatrix.toFloat32Array());
 
     gl.drawArrays(gl.TRIANGLES, 0, this.faces.length * 3);
   }
@@ -345,7 +356,7 @@ export class Mesh {
     return JSON.stringify({ v, f, c });
   }
 
-  intersect = (a: { x1: number; y1: number; x2: number; y2: number }) => {
+  floorIntersect = (a: { x1: number; y1: number; x2: number; y2: number }) => {
     const trans1 = this.boundingBox.flb.matrixTransform(this.modelMatrix);
     const trans2 = this.boundingBox.frb.matrixTransform(this.modelMatrix);
     //use matrices and get rotation

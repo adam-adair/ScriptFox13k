@@ -16,7 +16,10 @@ export class GameObject {
   draw(shadow = false) {
     this.mesh.draw(
       this.game.gl,
-      shadow ? this.game.program : this.game.program
+      shadow ? this.game.s_program : this.game.program,
+      this.game.samplerUniform,
+      this.game.shadowDepthTexture,
+      shadow
     );
   }
 }
