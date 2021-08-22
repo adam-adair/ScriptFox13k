@@ -1,4 +1,5 @@
 import { Color, White } from "./colors";
+import { shadowTexture, viewSize } from "./constants";
 
 export class Matrix extends DOMMatrix {
   transposeSelf() {
@@ -26,6 +27,45 @@ export class Matrix extends DOMMatrix {
     temp = this.m34;
     this.m34 = this.m43;
     this.m43 = temp;
+  }
+  lookAt(
+    cameraX: number,
+    cameraY: number,
+    cameraZ: number,
+    targetX: number,
+    targetY: number,
+    targetZ: number,
+    upX = 0,
+    upY = 1,
+    upZ = 0
+  ): void {
+    var e, fx, fy, fz, rlf, sx, sy, sz, rls, ux, uy, uz;
+    fx = targetX - cameraX;
+    fy = targetY - cameraY;
+    fz = targetZ - cameraZ;
+    rlf = 1 / Math.hypot(fx, fy, fz);
+    fx *= rlf;
+    fy *= rlf;
+    fz *= rlf;
+    sx = fy * upZ - fz * upY;
+    sy = fz * upX - fx * upZ;
+    sz = fx * upY - fy * upX;
+    rls = 1 / Math.hypot(sx, sy, sz);
+    sx *= rls;
+    sy *= rls;
+    sz *= rls;
+    ux = sy * fz - sz * fy;
+    uy = sz * fx - sx * fz;
+    uz = sx * fy - sy * fx;
+    // prettier-ignore
+    var ret = new Matrix([
+      sx, ux, -fx, 0,
+      sy, uy, -fy, 0,
+      sz, uz, -fz, 0,
+      0,  0,  0,   1
+    ]);
+    ret.translateSelf(-cameraX, -cameraY, -cameraZ);
+    this.multiplySelf(ret);
   }
 }
 
@@ -227,6 +267,11 @@ export class Mesh {
       this.vbo = new Float32Array(arr);
       this.buffer = gl.createBuffer();
     }
+    //get model and normal matrix
+    this.modelMatrix = this.pMatrix.multiply(this.rMatrix);
+    const normalMatrix = new Matrix(this.modelMatrix.toString());
+    normalMatrix.invertSelf();
+    normalMatrix.transposeSelf();
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     gl.bufferData(gl.ARRAY_BUFFER, this.vbo, gl.STATIC_DRAW);
@@ -241,17 +286,13 @@ export class Mesh {
     gl.enableVertexAttribArray(color);
 
     const normal = gl.getAttribLocation(program, "normal");
+    //color doesn't exist on sprogram
     gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, FSIZE * 9, FSIZE * 6);
     gl.enableVertexAttribArray(normal);
 
     // Set the model matrix
     const model = gl.getUniformLocation(program, "model");
     const nMatrix = gl.getUniformLocation(program, "nMatrix");
-
-    this.modelMatrix = this.pMatrix.multiply(this.rMatrix);
-    const normalMatrix = new Matrix(this.modelMatrix.toString());
-    normalMatrix.invertSelf();
-    normalMatrix.transposeSelf();
 
     gl.uniformMatrix4fv(model, false, this.modelMatrix.toFloat32Array());
     gl.uniformMatrix4fv(nMatrix, false, normalMatrix.toFloat32Array());

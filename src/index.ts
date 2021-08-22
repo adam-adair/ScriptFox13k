@@ -13,6 +13,7 @@ import {
   scapeWidth,
   scapeHeight,
   scapeY,
+  viewSize,
 } from "./core/constants";
 import { Game } from "./core/engine";
 
@@ -81,8 +82,8 @@ const loop = (time: number) => {
 };
 
 window.onload = () => {
-  canvas.width = 640; //document.body.clientWidth;
-  canvas.height = 480; //document.body.clientHeight;
+  canvas.width = viewSize.width; //document.body.clientWidth;
+  canvas.height = viewSize.height; //document.body.clientHeight;
   init();
 };
 

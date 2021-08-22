@@ -13,7 +13,10 @@ export class GameObject {
   rotate(x: number, y: number, z: number) {
     this.mesh.rotate(x, y, z);
   }
-  draw() {
-    this.mesh.draw(this.game.gl, this.game.program);
+  draw(shadow = false) {
+    this.mesh.draw(
+      this.game.gl,
+      shadow ? this.game.program : this.game.program
+    );
   }
 }

@@ -3,7 +3,7 @@ export const zoom = 10;
 export const lightDirection = { x: 0, y: 4, z: 10 };
 export const ambientLightAmount = 0.1;
 export const scapeWidth = 4;
-export const scapeHeight = 1;
+export const scapeHeight = 0.2;
 export const scapeCols = 8;
 export const scapeRows = 16;
 export const scapeSpeed = 0.1;
@@ -21,3 +21,5 @@ export const bulletInfo = {
   rotation: 10,
 };
 export const enemyBulletDelay = 1000;
+export const shadowTexture = { width: 512, height: 512 };
+export const viewSize = { width: 640, height: 480 };

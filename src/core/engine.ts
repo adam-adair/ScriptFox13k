@@ -4,6 +4,8 @@ import {
   lightDirection,
   ambientLightAmount,
   fogDistance,
+  shadowTexture,
+  viewSize,
 } from "./constants";
 import { perspective, orthogonal } from "./camera";
 import { Player } from "../gameObjects/player";
@@ -29,7 +31,8 @@ export class Game {
     this.bullets = [];
     this.landscape = [];
     const { gl, program } = this;
-    //shader source
+
+    //normal program
     const vs_source = require("../glsl/vshader.glsl") as string;
     const fs_source = require("../glsl/fshader.glsl") as string;
 
@@ -51,6 +54,7 @@ export class Game {
     console.log("program:", gl.getProgramInfoLog(program) || "OK");
 
     //set background color, enable depth
+    gl.clearDepth(1.0);
     gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
@@ -103,35 +107,34 @@ export class Game {
     gl.uniform2fv(u_FogDist, a_fogDist);
   }
   update(time: number) {
+    const { player, bullets, enemies, landscape } = this;
     //update ticks
-    this.lastTime = this.time;
+    this.lastTime = time;
     this.time = time;
 
-    //clear screen
+    // //draw player
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-    this.player.respondToInput();
-
-    //draw player
-    this.player.update();
-    this.player.draw();
+    player.respondToInput();
+    player.update();
+    player.draw();
 
     //draw enemies
-    for (let i = 0; i < this.enemies.length; i++) {
-      const enemy = this.enemies[i];
+    for (let i = 0; i < enemies.length; i++) {
+      const enemy = enemies[i];
       enemy.update();
       enemy.draw();
     }
 
     //draw bullets
-    for (let i = 0; i < this.bullets.length; i++) {
-      const bullet = this.bullets[i];
+    for (let i = 0; i < bullets.length; i++) {
+      const bullet = bullets[i];
       bullet.update();
       bullet.draw();
     }
 
     //draw landscape
-    for (let i = 0; i < this.landscape.length; i++) {
-      const square = this.landscape[i];
+    for (let i = 0; i < landscape.length; i++) {
+      const square = landscape[i];
       square.update(i);
       square.draw();
     }
