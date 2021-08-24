@@ -187,7 +187,8 @@ export class Game {
       1,
       100
     );
-    cameraMatrix.translateSelf(0, 0, -zoom * 2);
+    // cameraMatrix.translateSelf(0, -5, -zoom * 2);
+    cameraMatrix.lookAt(0, 4, zoom * 2, 0, 1, 0);
     gl.uniformMatrix4fv(camera, false, cameraMatrix.toFloat32Array());
 
     // light

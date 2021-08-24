@@ -18,7 +18,7 @@ export const handleInput = (
   pressed: boolean,
   player: Player
 ) => {
-  switch (ev.key) {
+  switch (ev.key.toLowerCase()) {
     case "w":
       player.gameInput.up = pressed;
       ev.preventDefault();

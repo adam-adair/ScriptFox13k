@@ -122,7 +122,7 @@ export class Face {
   }
 }
 // facing box: front/back,left/right, top/bottom
-export class BoundingBox {
+export interface BoundingBox {
   flb: DOMPoint;
   frb: DOMPoint;
   flt: DOMPoint;
@@ -251,7 +251,8 @@ export class Mesh {
     program: WebGLProgram,
     samplerUniform: WebGLUniformLocation,
     shadowDepthTexture: WebGLTexture,
-    shadow = false
+    shadow = false,
+    wireframe = false
   ): void {
     //if vbo doesn't exist, create it and fill with polygon info
     if (!this.vbo) {
@@ -308,7 +309,9 @@ export class Mesh {
     const model = gl.getUniformLocation(program, "model");
     gl.uniformMatrix4fv(model, false, this.modelMatrix.toFloat32Array());
 
-    gl.drawArrays(gl.TRIANGLES, 0, this.faces.length * 3);
+    wireframe
+      ? gl.drawArrays(gl.LINE_LOOP, 0, this.faces.length * 3)
+      : gl.drawArrays(gl.TRIANGLES, 0, this.faces.length * 3);
   }
 
   rotate(x: number, y: number, z: number): void {
@@ -381,5 +384,22 @@ export class Mesh {
       if (b.y2 < fht) return true;
     }
     return false;
+  };
+
+  meshIntersect = (otherMesh: Mesh): boolean => {
+    return false;
+  };
+
+  pointIntersect = (point: DOMPoint): boolean => {
+    const min = this.boundingBox.flb;
+    const max = this.boundingBox.brt;
+    return (
+      point.x >= min.x &&
+      point.x <= max.x &&
+      point.y >= min.y &&
+      point.y <= max.y &&
+      point.z >= min.z &&
+      point.z <= max.z
+    );
   };
 }

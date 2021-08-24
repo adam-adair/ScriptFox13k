@@ -1,6 +1,7 @@
 import { Color, Green } from "../core/colors";
 import {
   disappearNear,
+  groundDamage,
   playerSpeed,
   scapeCols,
   scapeHeight,
@@ -96,7 +97,7 @@ export class LandscapeSquare extends GameObject {
       //check line against player extents
       if (this.game.player.mesh.floorIntersect(segment)) {
         this.game.player.translate(0, playerSpeed, 0);
-      } else {
+        this.game.player.hit(groundDamage);
       }
     }
   }

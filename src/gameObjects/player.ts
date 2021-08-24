@@ -4,6 +4,8 @@ import {
   rotationRecovery,
   bounds,
   playerSpeed,
+  bulletDamage,
+  bbScale,
 } from "../core/constants";
 import { GameInput } from "../core/input";
 import { Bullet } from "./bullet";
@@ -13,11 +15,23 @@ import { Game } from "../core/engine";
 export class Player extends GameObject {
   gameInput: GameInput;
   atBounds: boolean;
+  powerUps: string[];
+
   constructor(game: Game, meshInfo: MeshInfo) {
     super(game, meshInfo);
     this.game.player = this;
     this.atBounds = false;
     this.gameInput = new GameInput();
+    this.powerUps = ["doubleGuns"];
+
+    //scale player box for more reasonable hits
+    const bb = this.mesh.boundingBox;
+    const k = Object.keys(bb) as Array<keyof typeof bb>;
+    k.map((j) => {
+      bb[j].x *= bbScale;
+      bb[j].y *= bbScale;
+      bb[j].z *= bbScale;
+    });
   }
   translate(x: number, y: number, z: number) {
     if (
@@ -33,6 +47,7 @@ export class Player extends GameObject {
   }
 
   update() {
+    super.update();
     //get player back to 0 rotation
     if (
       this.mesh.rotation.z < 180 &&
@@ -49,16 +64,40 @@ export class Player extends GameObject {
     ) {
       this.rotate(0, 0, rotationRecovery);
     }
+    //get rotation and position of player
+    const inversePlayerMatrix = new DOMMatrix(this.mesh.modelMatrix.toString());
+    inversePlayerMatrix.invertSelf();
+    for (let i = 0; i < this.game.bullets.length; i++) {
+      //get bullet
+      const bullet = this.game.bullets[i];
+      const { x, y, z } = bullet.mesh.position;
+      //apply some transform to bullet point
+      const point = new DOMPoint(x, y, z);
+      const rel = point.matrixTransform(inversePlayerMatrix);
+      //check if bullet point is in player box
+      if (this.mesh.pointIntersect(rel)) {
+        this.hit(bulletDamage);
+        bullet.destroy();
+      }
+    }
   }
 
   fire() {
-    const bullet = new Bullet(this.game, [Red, Yellow, White, Yellow], 1);
-    bullet.translate(
-      this.mesh.position.x,
-      this.mesh.position.y,
-      this.mesh.position.z - this.mesh.boundingBox.blt.z
-    );
-    this.game.bullets.push(bullet);
+    let numBullets = 1;
+    let offsets = [0];
+    if (this.powerUps.includes("doubleGuns")) {
+      numBullets = 2;
+      offsets = [-1, 1];
+    }
+    for (let i = 0; i < numBullets; i++) {
+      const bullet = new Bullet(this.game, [Red, Yellow, White, Yellow], 1);
+      bullet.translate(
+        this.mesh.position.x + offsets[i],
+        this.mesh.position.y,
+        this.mesh.position.z + this.mesh.boundingBox.flt.z - 0.1
+      );
+      this.game.bullets.push(bullet);
+    }
   }
 
   respondToInput() {

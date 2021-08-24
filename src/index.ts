@@ -20,6 +20,7 @@ import { Game } from "./core/engine";
 const start = document.getElementById("start");
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+const playerHealth = document.getElementById("playerHealth");
 
 let game: Game;
 
@@ -27,27 +28,25 @@ const init = async () => {
   //initialize game
   game = new Game(canvas);
 
+  //load some meshes
+  const meshes = await Promise.all([
+    Mesh.fromSerialized("./models/player.json"),
+    Mesh.fromSerialized("./models/enemy1.json"),
+  ]);
+
+  // serialize obj to make them smaller, save to JSON:
+
+  // const mesh = await Mesh.fromObjMtl("./obj/enemy.obj", "./obj/enemy.mtl", 1);
+  // console.log(new Enemy(game, mesh, 1).mesh.serialize(2));
+
   // set up some objects
-  const player = new Player(
-    game,
-    await Mesh.fromSerialized("./models/player.json")
-    // await Mesh.fromObjMtl("./obj/ship3.obj", "./obj/ship3.mtl", 0.05)
-  );
+  const player = new Player(game, meshes[0]);
   document.onkeydown = (ev) => handleInput(ev, true, player);
   document.onkeyup = (ev) => handleInput(ev, false, player);
 
-  const enemy = new Enemy(
-    game,
-    await Mesh.fromSerialized("./models/enemy.json")
-    // await Mesh.fromObjMtl("./obj/enemy.obj", "./obj/enemy.mtl", 1)
-  );
-  // console.log(enemy.serialize(2));
-  enemy.rotate(0, -90, 90);
-  enemy.translate(0, 0, -10);
+  const enemy = new Enemy(game, meshes[1], 15);
 
-  // player = new Cube(0.3, Red);
-  // player.translate(0, scapeY / 2, 0);
-  player.rotate(0, 180, 0);
+  enemy.translate(0, 0, -30);
 
   for (let i = 0; i < scapeRows; i++) {
     for (let j = 0; j < scapeCols; j++) {
@@ -78,6 +77,7 @@ const init = async () => {
 //game loop
 const loop = (time: number) => {
   game.update(time);
+  playerHealth.innerHTML = game.player.health.toFixed(2);
   requestAnimationFrame(loop);
 };
 
