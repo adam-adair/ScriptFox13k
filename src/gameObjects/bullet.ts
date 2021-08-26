@@ -2,7 +2,7 @@ import { Color } from "../core/colors";
 import { bulletInfo, disappearFar, disappearNear } from "../core/constants";
 import { Game } from "../core/engine";
 import { GameObject } from "../core/gameObject";
-import { Face, Vertex } from "../core/mesh";
+import { Face, Mesh, Vertex } from "../core/mesh";
 
 export class Bullet extends GameObject {
   direction: number;
@@ -19,16 +19,13 @@ export class Bullet extends GameObject {
       new Face(3, 0, 2, colors[2]),
       new Face(0, 3, 1, colors[3]),
     ];
-    super(game, { vertices, faces });
+    super(game, new Mesh({ vertices, faces }));
     this.direction = direction;
   }
   update() {
     this.translate(0, 0, -bulletInfo.speed * this.direction);
     this.rotate(bulletInfo.rotation, bulletInfo.rotation, bulletInfo.rotation);
-    if (
-      this.mesh.position.z < disappearFar ||
-      this.mesh.position.z > disappearNear
-    )
+    if (this.position.z < disappearFar || this.position.z > disappearNear)
       this.destroy();
   }
   destroy() {

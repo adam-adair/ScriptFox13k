@@ -1,5 +1,4 @@
 import { Color, White } from "./colors";
-import { shadowTexture, viewSize } from "./constants";
 
 export class Matrix extends DOMMatrix {
   transposeSelf() {
@@ -140,23 +139,14 @@ export type MeshInfo = {
 
 export class Mesh {
   vertices: Vertex[];
-  position: Vertex;
-  rotation: Vertex;
   faces: Face[];
-  pMatrix: Matrix;
-  rMatrix: Matrix;
-  modelMatrix: DOMMatrix;
   buffer: WebGLBuffer;
   vbo: Float32Array;
   boundingBox: BoundingBox;
   constructor({ vertices, faces }: MeshInfo) {
     this.vertices = vertices;
     this.faces = faces;
-    this.pMatrix = new Matrix();
-    this.rMatrix = new Matrix();
-    this.modelMatrix = new DOMMatrix();
-    this.position = new Vertex(0, 0, 0);
-    this.rotation = new Vertex(0, 0, 0);
+
     const extents = {
       x1: Infinity,
       y1: Infinity,
@@ -186,7 +176,7 @@ export class Mesh {
     };
   }
 
-  static async fromSerialized(url: string): Promise<MeshInfo> {
+  static async fromSerialized(url: string): Promise<Mesh> {
     const res = await fetch(url);
     const obj = await res.json();
     const vertices: Vertex[] = [];
@@ -203,7 +193,7 @@ export class Mesh {
     for (let i = 0; i < f.length; i += 4) {
       faces.push(new Face(f[i], f[i + 1], f[i + 2], colors[f[i + 3]]));
     }
-    return { vertices, faces };
+    return new Mesh({ vertices, faces });
   }
 
   static async fromObjMtl(
@@ -252,7 +242,8 @@ export class Mesh {
     samplerUniform: WebGLUniformLocation,
     shadowDepthTexture: WebGLTexture,
     shadow = false,
-    wireframe = false
+    wireframe = false,
+    modelMatrix: DOMMatrix
   ): void {
     //if vbo doesn't exist, create it and fill with polygon info
     if (!this.vbo) {
@@ -275,8 +266,8 @@ export class Mesh {
       this.buffer = gl.createBuffer();
     }
     //get model and normal matrix
-    this.modelMatrix = this.pMatrix.multiply(this.rMatrix);
-    const normalMatrix = new Matrix(this.modelMatrix.toString());
+
+    const normalMatrix = new Matrix(modelMatrix.toString());
     normalMatrix.invertSelf();
     normalMatrix.transposeSelf();
 
@@ -307,29 +298,11 @@ export class Mesh {
     }
     // Set the model matrix
     const model = gl.getUniformLocation(program, "model");
-    gl.uniformMatrix4fv(model, false, this.modelMatrix.toFloat32Array());
+    gl.uniformMatrix4fv(model, false, modelMatrix.toFloat32Array());
 
     wireframe
       ? gl.drawArrays(gl.LINE_LOOP, 0, this.faces.length * 3)
       : gl.drawArrays(gl.TRIANGLES, 0, this.faces.length * 3);
-  }
-
-  rotate(x: number, y: number, z: number): void {
-    // this.rotation = this.rotation.subtract(new Vertex(-x, -y, -z));
-    this.rotation.x = (this.rotation.x + 360 + x) % 360;
-    this.rotation.y = (this.rotation.y + 360 + y) % 360;
-    this.rotation.z = (this.rotation.z + 360 + z) % 360;
-    this.rMatrix = new Matrix();
-    this.rMatrix.rotateSelf(
-      -this.rotation.x,
-      -this.rotation.y,
-      this.rotation.z
-    );
-  }
-
-  translate(x: number, y: number, z: number): void {
-    this.position = this.position.subtract(new Vertex(-x, -y, -z));
-    this.pMatrix.translateSelf(x, y, z);
   }
 
   serialize(precision: number): string {
@@ -359,9 +332,12 @@ export class Mesh {
     return JSON.stringify({ v, f, c });
   }
 
-  floorIntersect = (a: { x1: number; y1: number; x2: number; y2: number }) => {
-    const trans1 = this.boundingBox.flb.matrixTransform(this.modelMatrix);
-    const trans2 = this.boundingBox.frb.matrixTransform(this.modelMatrix);
+  floorIntersect = (
+    a: { x1: number; y1: number; x2: number; y2: number },
+    modelMatrix: DOMMatrix
+  ) => {
+    const trans1 = this.boundingBox.flb.matrixTransform(modelMatrix);
+    const trans2 = this.boundingBox.frb.matrixTransform(modelMatrix);
     //use matrices and get rotation
     const b = {
       x1: trans1.x,
@@ -383,10 +359,6 @@ export class Mesh {
       const fht = fwt * ht + a.y1;
       if (b.y2 < fht) return true;
     }
-    return false;
-  };
-
-  meshIntersect = (otherMesh: Mesh): boolean => {
     return false;
   };
 

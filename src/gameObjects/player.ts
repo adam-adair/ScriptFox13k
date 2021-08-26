@@ -17,8 +17,8 @@ export class Player extends GameObject {
   atBounds: boolean;
   powerUps: string[];
 
-  constructor(game: Game, meshInfo: MeshInfo) {
-    super(game, meshInfo);
+  constructor(game: Game, meshIndex: number) {
+    super(game, meshIndex);
     this.game.player = this;
     this.atBounds = false;
     this.gameInput = new GameInput();
@@ -35,14 +35,14 @@ export class Player extends GameObject {
   }
   translate(x: number, y: number, z: number) {
     if (
-      this.mesh.position.x + x > bounds.left &&
-      this.mesh.position.x + x < bounds.right &&
-      this.mesh.position.y + y < bounds.top
+      this.position.x + x > bounds.left &&
+      this.position.x + x < bounds.right &&
+      this.position.y + y < bounds.top
     ) {
       if (x > 0) this.rotate(0, 0, -rotationSpeed);
       else if (x < 0) this.rotate(0, 0, rotationSpeed);
       this.atBounds = false;
-      this.mesh.translate(x, y, z);
+      super.translate(x, y, z);
     } else this.atBounds = true;
   }
 
@@ -50,27 +50,27 @@ export class Player extends GameObject {
     super.update();
     //get player back to 0 rotation
     if (
-      this.mesh.rotation.z < 180 &&
+      this.rotation.z < 180 &&
       ((!this.gameInput.left && !this.gameInput.spinL) ||
         (this.atBounds && !this.gameInput.spinL))
     ) {
-      const amt = Math.min(rotationRecovery, this.mesh.rotation.z);
+      const amt = Math.min(rotationRecovery, this.rotation.z);
       this.rotate(0, 0, -amt);
     }
     if (
-      this.mesh.rotation.z >= 180 &&
+      this.rotation.z >= 180 &&
       ((!this.gameInput.right && !this.gameInput.spinR) ||
         (this.atBounds && !this.gameInput.spinR))
     ) {
       this.rotate(0, 0, rotationRecovery);
     }
     //get rotation and position of player
-    const inversePlayerMatrix = new DOMMatrix(this.mesh.modelMatrix.toString());
+    const inversePlayerMatrix = new DOMMatrix(this.modelMatrix.toString());
     inversePlayerMatrix.invertSelf();
     for (let i = 0; i < this.game.bullets.length; i++) {
       //get bullet
       const bullet = this.game.bullets[i];
-      const { x, y, z } = bullet.mesh.position;
+      const { x, y, z } = bullet.position;
       //apply some transform to bullet point
       const point = new DOMPoint(x, y, z);
       const rel = point.matrixTransform(inversePlayerMatrix);
@@ -92,9 +92,9 @@ export class Player extends GameObject {
     for (let i = 0; i < numBullets; i++) {
       const bullet = new Bullet(this.game, [Red, Yellow, White, Yellow], 1);
       bullet.translate(
-        this.mesh.position.x + offsets[i],
-        this.mesh.position.y,
-        this.mesh.position.z + this.mesh.boundingBox.flt.z - 0.1
+        this.position.x + offsets[i],
+        this.position.y,
+        this.position.z + this.mesh.boundingBox.flt.z - 0.1
       );
       this.game.bullets.push(bullet);
     }

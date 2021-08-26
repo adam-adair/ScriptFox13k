@@ -4,15 +4,15 @@ import {
   lightDirection,
   ambientLightAmount,
   fogDistance,
-  shadowTexture,
+  shadowTextureDim,
   viewSize,
+  levels,
 } from "./constants";
 import { perspective, orthogonal } from "./camera";
 import { Player } from "../gameObjects/player";
-import { Enemy } from "../gameObjects/enemy";
 import { Bullet } from "../gameObjects/bullet";
-import { LandscapeSquare } from "../gameObjects/landscapeSquare";
-import { Matrix } from "./mesh";
+import { Matrix, Mesh } from "./mesh";
+import { Level } from "./level";
 
 export class Game {
   canvas: HTMLCanvasElement;
@@ -22,18 +22,19 @@ export class Game {
   shadowFramebuffer: WebGLFramebuffer;
   shadowDepthTexture: WebGLTexture;
   samplerUniform: WebGLUniformLocation;
+  meshes: Mesh[];
+  songs: HTMLAudioElement[];
   player: Player;
-  enemies: Enemy[];
   bullets: Bullet[];
-  landscape: LandscapeSquare[];
+  level: Level;
   lastTime: number;
   time: number;
+  currentLevel: number;
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
+    this.currentLevel = 0;
     this.gl = canvas.getContext("webgl");
-    this.enemies = [];
     this.bullets = [];
-    this.landscape = [];
     const { gl } = this;
     //set background color, enable depth
     gl.clearDepth(1.0);
@@ -53,7 +54,7 @@ export class Game {
     const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(
       fragShader,
-      fs_source.replace("shadowTexture", shadowTexture.width.toString())
+      fs_source.replace("shadowTexture", shadowTextureDim.width.toString())
     );
     gl.compileShader(fragShader);
     this.program = gl.createProgram();
@@ -108,8 +109,8 @@ export class Game {
       gl.TEXTURE_2D,
       0,
       gl.RGBA,
-      shadowTexture.width,
-      shadowTexture.height,
+      shadowTextureDim.width,
+      shadowTextureDim.height,
       0,
       gl.RGBA,
       gl.UNSIGNED_BYTE,
@@ -121,8 +122,8 @@ export class Game {
     gl.renderbufferStorage(
       gl.RENDERBUFFER,
       gl.DEPTH_COMPONENT16,
-      shadowTexture.width,
-      shadowTexture.height
+      shadowTextureDim.width,
+      shadowTextureDim.height
     );
 
     gl.framebufferTexture2D(
@@ -218,8 +219,7 @@ export class Game {
     const {
       player,
       bullets,
-      enemies,
-      landscape,
+      level,
       program,
       s_program,
       shadowFramebuffer,
@@ -232,7 +232,7 @@ export class Game {
 
     //draw texture
     gl.bindFramebuffer(gl.FRAMEBUFFER, shadowFramebuffer);
-    gl.viewport(0, 0, shadowTexture.width, shadowTexture.height);
+    gl.viewport(0, 0, shadowTextureDim.width, shadowTextureDim.height);
     gl.clearColor(0, 0, 0, 1);
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -257,9 +257,10 @@ export class Game {
     player.update();
     player.draw();
 
+    const { enemyWaves, currentWave, landscape } = level;
     //draw enemies
-    for (let i = 0; i < enemies.length; i++) {
-      const enemy = enemies[i];
+    for (let i = 0; i < enemyWaves[currentWave].length; i++) {
+      const enemy = enemyWaves[currentWave][i];
       enemy.update();
       enemy.draw();
     }
@@ -272,10 +273,21 @@ export class Game {
     }
 
     //draw landscape
-    for (let i = 0; i < landscape.length; i++) {
-      const square = landscape[i];
+    for (let i = 0; i < landscape.squares.length; i++) {
+      const square = landscape.squares[i];
       square.update(i);
       square.draw();
+    }
+
+    level.update();
+  }
+  nextLevel() {
+    // todo something when you win
+    if (this.currentLevel + 1 === levels.length) console.log("Won");
+    else {
+      // todo something to change levels, audio
+      this.currentLevel++;
+      this.level = Level.generateLevel(this, levels[this.currentLevel]);
     }
   }
 }

@@ -1,12 +1,13 @@
+import { Blue, Green } from "./colors";
+import { LevelData } from "./level";
+
 export const clearColor = { r: 0, g: 0.2, b: 0.2, a: 1 };
 export const zoom = 10;
 export const lightDirection = { x: 0, y: 4, z: 10 };
 export const ambientLightAmount = 0.1;
 export const scapeWidth = 4;
-export const scapeHeight = 1.2;
 export const scapeCols = 8;
 export const scapeRows = 16;
-export const scapeSpeed = 0.1;
 export const scapeY = -2.5;
 export const playerSpeed = 0.2;
 export const disappearNear = 20;
@@ -21,10 +22,34 @@ export const bulletInfo = {
   rotation: 10,
 };
 export const enemyBulletDelay = 1000;
-export const shadowTexture = { width: 512, height: 512 };
+export const shadowTextureDim = { width: 512, height: 512 };
 export const viewSize = { width: 640, height: 480 };
 export const startingHealth = 100;
 export const bulletDamage = 5;
 export const groundDamage = 0.1;
 export const bbScale = 0.9;
 export const wireframeTime = 250;
+export const levels: LevelData[] = [
+  {
+    waveIndices: [
+      [1, 1],
+      [1, 1],
+      [1, 1],
+    ],
+    audioIndex: 0,
+    speed: 0.1,
+    height: 1.2,
+    color: Blue,
+  },
+  {
+    waveIndices: [
+      [1, 1],
+      [1, 1],
+      [1, 1],
+    ],
+    audioIndex: 0,
+    speed: 0.1,
+    height: 1.2,
+    color: Green,
+  },
+];
