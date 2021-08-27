@@ -3,7 +3,6 @@ uniform vec2 u_FogDist;
 uniform vec3 u_FogColor;
 varying vec4 v_color;
 varying float v_dist;
-// guide: https://www.chinedufn.com/webgl-shadow-mapping-tutorial/
 varying vec4 shadowPos;
 uniform sampler2D depthColorTexture;
 float decodeFloat (vec4 color) {
@@ -15,11 +14,9 @@ float decodeFloat (vec4 color) {
   );
   return dot(color, bitShift);
 }
-////////////////
 void main() {
   float fogFactor = (u_FogDist.y - v_dist) / (u_FogDist.y - u_FogDist.x);
   vec3 color = mix(u_FogColor, vec3(v_color), clamp(fogFactor, 0.0, 1.0));
-  //////////////////////////
   vec3 fragmentDepth = shadowPos.xyz;
   float shadowAcneRemover = 0.007;
   fragmentDepth.z -= shadowAcneRemover;
@@ -35,6 +32,5 @@ void main() {
   }
   amountInLight /= 9.0;
   amountInLight = max(amountInLight, 0.3);
-  //////////////////////////////////
   gl_FragColor = vec4(amountInLight * color, v_color.a);
 }

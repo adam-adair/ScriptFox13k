@@ -1,5 +1,4 @@
 precision mediump float;
-// guide: https://www.chinedufn.com/webgl-shadow-mapping-tutorial/
 vec4 encodeFloat (float depth) {
   const vec4 bitShift = vec4(
     256 * 256 * 256,

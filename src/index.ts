@@ -4,10 +4,9 @@ import { Player } from "./gameObjects/player";
 import { levels, viewSize } from "./core/constants";
 import { Game } from "./core/engine";
 import { Level } from "./core/level";
-import { Blue, Purple, Yellow } from "./core/colors";
+import { Purple, Yellow } from "./core/colors";
 import { generateSong } from "./music/generateSong";
 import { song1 } from "./music/song1";
-import { Enemy } from "./gameObjects/enemy";
 import { Cube } from "./cube";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -19,7 +18,7 @@ const init = async () => {
   //initialize game
   game = new Game(canvas);
 
-  game.songs = [null]; //[generateSong(song1)];
+  game.songs = [generateSong(song1)];
 
   //load some meshes
   game.meshes = await Promise.all([
