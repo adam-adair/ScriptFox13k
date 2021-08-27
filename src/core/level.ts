@@ -38,7 +38,6 @@ export class Level {
           w[j] >= bonusMeshes[0]
             ? new Bonus(game, w[j])
             : new Enemy(game, w[j]);
-        // todo, place enemies and determine behavior
         if (w.length >= 4) {
           j === 4
             ? (e.initialPos = [0, 1.5])

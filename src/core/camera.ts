@@ -16,12 +16,22 @@ export const perspective = (
   ]);
 };
 
-export const orthogonal = (x: number, y: number, z: number) => {
+export const orthogonal = (
+  top: number,
+  bottom: number,
+  left: number,
+  right: number,
+  near: number,
+  far: number
+) => {
+  const rw = 1 / (right - left);
+  const rh = 1 / (top - bottom);
+  const rd = 1 / (far - near);
   // prettier-ignore
-  return new DOMMatrix([
-    2 / x, 0, 0, 0,
-    0, 2 / y, 0, 0,
-    0, 0, -2 / z, 0,
-    -1, 1, 0, 1
+  return new Matrix([
+    2 * rw, 0, 0, 0,
+    0, 2 * rh, 0, 0,
+    0, 0, -2 * rd, 0,
+    -(right + left) * rw, -(top + bottom) * rh, -(far + near) * rd, 1
   ]);
 };

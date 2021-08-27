@@ -131,19 +131,10 @@ export class Game {
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
     //create projection matrix for shadow "camera"
-    const lightMatrix = new Matrix(
-      orthogonal(
-        (zoom * canvas.width * 1.5) / canvas.height,
-        zoom * 1.5,
-        100
-      ).toString()
-    );
-    lightMatrix.translateSelf(
-      (zoom * canvas.width * 1.5) / canvas.height / 2,
-      (-zoom * 1.5) / 2,
-      -zoom
-    );
-    lightMatrix.lookAt(0, 1, 1, 0, 0, 0.98);
+    const lightMatrix = orthogonal(2.2 * zoom, -1, -zoom, zoom, 0, 100);
+    lightMatrix.rotateSelf(90, 0, 0);
+    lightMatrix.translateSelf(0, -16, 0);
+    // lightMatrix.lookAt(0, 1, 0, 0, 0, 0);
 
     const lightCamera = gl.getUniformLocation(s_program, "lightMatrix");
     gl.uniformMatrix4fv(lightCamera, false, lightMatrix.toFloat32Array());
@@ -176,7 +167,7 @@ export class Game {
       100
     );
     // cameraMatrix.translateSelf(0, -5, -zoom * 2);
-    cameraMatrix.lookAt(0, 4, zoom * 2, 0, 1, 0);
+    cameraMatrix.lookAt(0, 5, zoom * 2.5, 0, 1, 0);
     gl.uniformMatrix4fv(camera, false, cameraMatrix.toFloat32Array());
 
     // light
@@ -212,6 +203,7 @@ export class Game {
       shadowFramebuffer,
       gl,
     } = this;
+    const { enemyWaves, currentWave, landscape } = level;
 
     /////////////////////////////////////////////////////////////////
     //switch to shadow program
@@ -225,6 +217,11 @@ export class Game {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     player.draw(true);
+    // shadows for enemies but looks weird
+    // for (let i = 0; i < enemyWaves[currentWave].length; i++) {
+    //   const enemy = enemyWaves[currentWave][i];
+    //   enemy.draw(true);
+    // }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     //switch back and clear
@@ -244,7 +241,6 @@ export class Game {
     player.update();
     player.draw();
 
-    const { enemyWaves, currentWave, landscape } = level;
     //draw enemies
     for (let i = 0; i < enemyWaves[currentWave].length; i++) {
       const enemy = enemyWaves[currentWave][i];
