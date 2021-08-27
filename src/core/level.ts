@@ -1,6 +1,8 @@
+import { Bonus } from "../gameObjects/bonus";
 import { Enemy } from "../gameObjects/enemy";
 import { Landscape } from "../gameObjects/landscape";
 import { Color } from "./colors";
+import { bonusMeshes } from "./constants";
 import { Game } from "./engine";
 
 export class Level {
@@ -32,9 +34,22 @@ export class Level {
       const wave: Enemy[] = [];
       const w = waveIndices[i];
       for (let j = 0; j < w.length; j++) {
-        const e = new Enemy(game, w[j], j * 5 + 15);
+        const e =
+          w[j] >= bonusMeshes[0]
+            ? new Bonus(game, w[j])
+            : new Enemy(game, w[j]);
         // todo, place enemies and determine behavior
-        e.translate(-1 + j, 0, -15);
+        if (w.length >= 4) {
+          j === 4
+            ? (e.initialPos = [0, 1.5])
+            : (e.initialPos = [
+                -6 + (((j % 2) + 1) * 12) / 3,
+                Math.floor(j / 2) * 3,
+              ]);
+        } else {
+          e.initialPos = [((j + 1) * 12) / (w.length + 1) + -6, 0];
+        }
+        e.translate(e.initialPos[0], e.initialPos[1], 0);
         wave.push(e);
       }
       waves.push(wave);

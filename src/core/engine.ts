@@ -62,9 +62,6 @@ export class Game {
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragShader);
     gl.linkProgram(program);
-    console.log("vertex shader:", gl.getShaderInfoLog(vertexShader) || "OK");
-    console.log("fragment shader:", gl.getShaderInfoLog(fragShader) || "OK");
-    console.log("program:", gl.getProgramInfoLog(program) || "OK");
 
     /////////////////////////////////////////////////////////////////
     // shadow program
@@ -81,16 +78,6 @@ export class Game {
     gl.attachShader(s_program, lightVertexShader);
     gl.attachShader(s_program, lightFragmentShader);
     gl.linkProgram(s_program);
-    console.log(
-      "shadow vertex shader:",
-      gl.getShaderInfoLog(lightVertexShader) || "OK"
-    );
-    console.log(
-      "shadow fragment shader:",
-      gl.getShaderInfoLog(lightFragmentShader) || "OK"
-    );
-    console.log("shadow program:", gl.getProgramInfoLog(s_program) || "OK");
-
     gl.useProgram(s_program);
 
     //output shadow to frame buffer, bind to texture
@@ -286,6 +273,7 @@ export class Game {
     if (this.currentLevel + 1 === levels.length) console.log("Won");
     else {
       // todo something to change levels, audio
+      this.player.powerUps = [];
       this.currentLevel++;
       this.level = Level.generateLevel(this, levels[this.currentLevel]);
     }

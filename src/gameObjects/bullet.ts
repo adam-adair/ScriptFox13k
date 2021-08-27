@@ -6,7 +6,8 @@ import { Face, Mesh, Vertex } from "../core/mesh";
 
 export class Bullet extends GameObject {
   direction: number;
-  constructor(game: Game, colors: Color[], direction: number) {
+  damage: number;
+  constructor(game: Game, colors: Color[], direction: number, damage: number) {
     const vertices: Vertex[] = [
       new Vertex(-bulletInfo.size, -bulletInfo.size, bulletInfo.size),
       new Vertex(bulletInfo.size, -bulletInfo.size, bulletInfo.size),
@@ -21,6 +22,7 @@ export class Bullet extends GameObject {
     ];
     super(game, new Mesh({ vertices, faces }));
     this.direction = direction;
+    this.damage = damage;
   }
   update() {
     this.translate(0, 0, -bulletInfo.speed * this.direction);

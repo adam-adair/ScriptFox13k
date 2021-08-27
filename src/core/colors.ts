@@ -14,3 +14,5 @@ export const Green = new Color(0, 1, 0);
 export const Blue = new Color(0, 0, 1);
 export const White = new Color(1, 1, 1);
 export const Yellow = new Color(1, 1, 0);
+export const Purple = new Color(1, 0, 1);
+export const Ice = new Color(0, 1, 1);

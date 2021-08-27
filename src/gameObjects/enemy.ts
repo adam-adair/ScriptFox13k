@@ -1,16 +1,27 @@
 import { Bullet } from "./bullet";
 import { Green, Yellow } from "../core/colors";
-import { bulletDamage, enemyBulletDelay } from "../core/constants";
+import { enemyTypeData } from "../core/constants";
 import { Game } from "../core/engine";
 import { GameObject } from "../core/gameObject";
 
 export class Enemy extends GameObject {
+  initialPos: number[];
+  reachedStart: boolean;
   lastFiredTime: number;
-  constructor(game: Game, meshIndex: number, health: number) {
-    super(game, meshIndex, health);
+  enemyType: number;
+  constructor(game: Game, meshIndex: number) {
+    super(game, meshIndex, enemyTypeData[meshIndex].health);
+    this.translate(0, 6, -20);
+    this.reachedStart = false;
+    this.enemyType = meshIndex;
   }
   fire() {
-    const bullet = new Bullet(this.game, [Green, Yellow, Green, Yellow], -1);
+    const bullet = new Bullet(
+      this.game,
+      [Green, Yellow, Green, Yellow],
+      -1,
+      enemyTypeData[this.enemyType].bulletDamage
+    );
     bullet.translate(
       this.position.x,
       this.position.y,
@@ -20,13 +31,20 @@ export class Enemy extends GameObject {
   }
   update() {
     super.update();
+    if (!this.reachedStart) {
+      this.moveToStart();
+      return;
+    }
     if (this.lastFiredTime) {
-      if (this.game.time - enemyBulletDelay > this.lastFiredTime) {
+      if (
+        this.game.time - enemyTypeData[this.enemyType].bulletDelay >
+        this.lastFiredTime
+      ) {
         this.fire();
         this.lastFiredTime = this.game.time;
       }
     } else this.lastFiredTime = this.game.time;
-    //get rotation and position of player
+    //get rotation and position of enemy
     const inversePlayerMatrix = new DOMMatrix(this.modelMatrix.toString());
     inversePlayerMatrix.invertSelf();
     for (let i = 0; i < this.game.bullets.length; i++) {
@@ -38,7 +56,7 @@ export class Enemy extends GameObject {
       const rel = point.matrixTransform(inversePlayerMatrix);
       //check if bullet point is in player box
       if (this.mesh.pointIntersect(rel)) {
-        this.hit(bulletDamage);
+        this.hit(bullet.damage);
         bullet.destroy();
       }
     }
@@ -48,5 +66,10 @@ export class Enemy extends GameObject {
     const { enemyWaves, currentWave } = this.game.level;
     const ix = enemyWaves[currentWave].indexOf(this);
     enemyWaves[currentWave].splice(ix, 1);
+  }
+  moveToStart() {
+    this.translate(0, -0.2, 0);
+    if (Math.abs(this.position.y - this.initialPos[1]) <= 0.01)
+      this.reachedStart = true;
   }
 }

@@ -1,4 +1,3 @@
-import { MeshInfo } from "../core/mesh";
 import {
   rotationSpeed,
   rotationRecovery,
@@ -9,7 +8,7 @@ import {
 } from "../core/constants";
 import { GameInput } from "../core/input";
 import { Bullet } from "./bullet";
-import { Red, White, Yellow } from "../core/colors";
+import { Green, Purple, Red, White, Yellow } from "../core/colors";
 import { GameObject } from "../core/gameObject";
 import { Game } from "../core/engine";
 export class Player extends GameObject {
@@ -19,10 +18,9 @@ export class Player extends GameObject {
 
   constructor(game: Game, meshIndex: number) {
     super(game, meshIndex);
-    this.game.player = this;
     this.atBounds = false;
     this.gameInput = new GameInput();
-    this.powerUps = ["doubleGuns"];
+    this.powerUps = [];
 
     //scale player box for more reasonable hits
     const bb = this.mesh.boundingBox;
@@ -85,12 +83,24 @@ export class Player extends GameObject {
   fire() {
     let numBullets = 1;
     let offsets = [0];
+    let powerBullet = 1;
+    let bulletColor = [Red, White, Red, White];
     if (this.powerUps.includes("doubleGuns")) {
       numBullets = 2;
       offsets = [-1, 1];
+      bulletColor = [Yellow, White, Yellow, White];
+    }
+    if (this.powerUps.includes("powerBullet")) {
+      powerBullet = 1.75;
+      bulletColor = [Green, Purple, White, Purple];
     }
     for (let i = 0; i < numBullets; i++) {
-      const bullet = new Bullet(this.game, [Red, Yellow, White, Yellow], 1);
+      const bullet = new Bullet(
+        this.game,
+        bulletColor,
+        powerBullet,
+        powerBullet * 5
+      );
       bullet.translate(
         this.position.x + offsets[i],
         this.position.y,

@@ -21,7 +21,33 @@ export const bulletInfo = {
   speed: 0.5,
   rotation: 10,
 };
-export const enemyBulletDelay = 1000;
+export const enemyTypeData = [
+  {
+    //place holder for player mesh
+  },
+  //these are enemies
+  {
+    bulletDelay: 1000,
+    bulletDamage: 5,
+    health: 20,
+  },
+  {
+    bulletDelay: 750,
+    bulletDamage: 10,
+    health: 30,
+  },
+  //these are bonuses
+  {
+    bulletDelay: 1000000,
+    bulletDamage: 0,
+    health: 1,
+  },
+  {
+    bulletDelay: 1000000,
+    bulletDamage: 0,
+    health: 1,
+  },
+];
 export const shadowTextureDim = { width: 512, height: 512 };
 export const viewSize = { width: 640, height: 480 };
 export const startingHealth = 100;
@@ -29,17 +55,21 @@ export const bulletDamage = 5;
 export const groundDamage = 0.1;
 export const bbScale = 0.9;
 export const wireframeTime = 250;
+export const bonusMeshes = [3, 4];
 export const levels: LevelData[] = [
   {
     waveIndices: [
+      [bonusMeshes[1]],
+      [1],
       [1, 1],
-      [1, 1],
-      [1, 1],
+      [1, 1, 1],
+      [1, 1, 1, 1],
+      [1, 1, 1, 1, 2],
     ],
     audioIndex: 0,
     speed: 0.1,
-    height: 1.2,
-    color: Blue,
+    height: 0.4,
+    color: Green,
   },
   {
     waveIndices: [
