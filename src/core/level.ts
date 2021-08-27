@@ -47,7 +47,7 @@ export class Level {
                 Math.floor(j / 2) * 3,
               ]);
         } else {
-          e.initialPos = [((j + 1) * 12) / (w.length + 1) + -6, 0];
+          e.initialPos = [((j + 1) * 12) / (w.length + 1) + -6, 0.5];
         }
         e.translate(e.initialPos[0], e.initialPos[1], 0);
         wave.push(e);

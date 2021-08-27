@@ -14,11 +14,15 @@ const playerHealth = document.getElementById("playerHealth");
 
 let game: Game;
 
+// serialize obj to make them smaller, save to JSON:
+// import { JSONfromObjMtl } from "../meshUtil";
+// JSONfromObjMtl("./obj/enemy2.obj", "./obj/enemy2.mtl", 1);
+
 const init = async () => {
   //initialize game
   game = new Game(canvas);
 
-  game.songs = [generateSong(song1)];
+  game.songs = [null]; //[generateSong(song1)];
 
   //load some meshes
   game.meshes = await Promise.all([
@@ -29,11 +33,6 @@ const init = async () => {
 
   game.meshes.push(new Cube(0.5, Yellow));
   game.meshes.push(new Cube(0.5, Purple));
-
-  // serialize obj to make them smaller, save to JSON:
-
-  // const mesh = await Mesh.fromObjMtl("./obj/enemy2.obj", "./obj/enemy2.mtl", 1);
-  // console.log(new Mesh(mesh).serialize(2));
 
   game.level = Level.generateLevel(game, levels[0]);
 
