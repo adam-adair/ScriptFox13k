@@ -31,10 +31,13 @@ export class Enemy extends GameObject {
   }
   update() {
     super.update();
+    //move to start position
     if (!this.reachedStart) {
       this.moveToStart();
       return;
     }
+
+    //fire bullet if enough time elapsed
     if (this.lastFiredTime) {
       if (
         this.game.time - enemyTypeData[this.enemyType].bulletDelay >
@@ -44,6 +47,8 @@ export class Enemy extends GameObject {
         this.lastFiredTime = this.game.time;
       }
     } else this.lastFiredTime = this.game.time;
+
+    //check if hit by bullet
     //get rotation and position of enemy
     const inversePlayerMatrix = new DOMMatrix(this.modelMatrix.toString());
     inversePlayerMatrix.invertSelf();
@@ -61,6 +66,9 @@ export class Enemy extends GameObject {
       }
     }
     if (this.health <= 0) this.destroy();
+
+    //move enemy based on type
+    this.move();
   }
   destroy() {
     const { enemyWaves, currentWave } = this.game.level;
@@ -71,5 +79,14 @@ export class Enemy extends GameObject {
     this.translate(0, -0.2, 0);
     if (Math.abs(this.position.y - this.initialPos[1]) <= 0.01)
       this.reachedStart = true;
+  }
+  // todo write movement routines
+  move() {
+    if (this.enemyType === 1) {
+      this.rotate(0, 0, 2);
+    }
+    if (this.enemyType === 2) {
+      this.rotate(0, 0, -3);
+    }
   }
 }

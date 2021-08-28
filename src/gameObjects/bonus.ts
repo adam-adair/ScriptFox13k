@@ -13,7 +13,7 @@ export class Bonus extends Enemy {
   }
   update() {
     this.rotate(0, 2, 0);
-    this.translate(0, 0, 0.5);
+    this.translate(0, 0, 0.35);
     if (this.position.z > disappearNear) this.destroy();
     super.update();
   }

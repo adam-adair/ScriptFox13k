@@ -4,7 +4,8 @@ import { Face, MeshInfo, Vertex } from "./src/core/mesh";
 export const JSONfromObjMtl = async (
   url: string,
   mtlUrl: string,
-  scale: number
+  scale: number,
+  { x, y, z } = { x: 0, y: 0, z: 0 }
 ): Promise<void> => {
   const res = await fetch(url);
   const objArr = (await res.text()).split("\n");
@@ -36,16 +37,24 @@ export const JSONfromObjMtl = async (
       faces.push(new Face(A, B, C, Colors[currentCol]));
     }
   }
-  console.log(serialize({ vertices, faces }, 2));
+  console.log(serialize({ vertices, faces }, 2, { x, y, z }));
 };
 
-const serialize = (mesh: MeshInfo, precision: number): string => {
+const serialize = (
+  mesh: MeshInfo,
+  precision: number,
+  { x, y, z } = { x: 0, y: 0, z: 0 }
+): string => {
   const v = [];
   const f = [];
   const c = [];
   const colorsArray: string[] = [];
   for (let i = 0; i < mesh.vertices.length; i++) {
-    const vert = mesh.vertices[i];
+    const m = new DOMMatrix();
+    m.rotateSelf(x, y, z);
+    const ver = mesh.vertices[i];
+    let vert = new DOMPoint(ver.x, ver.y, ver.z);
+    vert = vert.matrixTransform(m);
     v.push(
       +vert.x.toFixed(precision),
       +vert.y.toFixed(precision),

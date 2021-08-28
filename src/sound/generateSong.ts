@@ -6,10 +6,7 @@ export const generateSong = (song: Song): HTMLAudioElement => {
   cPlayer.generate();
   let done = false;
   let audio: HTMLAudioElement;
-  setInterval(function () {
-    if (done) {
-      return;
-    }
+  while (!done) {
     const pct = cPlayer.generate();
     done = pct >= 1;
     if (done) {
@@ -18,7 +15,7 @@ export const generateSong = (song: Song): HTMLAudioElement => {
       audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
       audio.loop = true;
     }
-  }, 0);
+  }
   return audio;
 };
 

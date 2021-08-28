@@ -1,4 +1,4 @@
-import { Blue, Green } from "./colors";
+import { Blue, Green, Ice } from "./colors";
 import { LevelData } from "./level";
 
 export const clearColor = { r: 0, g: 0.2, b: 0.2, a: 1 };
@@ -36,18 +36,25 @@ export const enemyTypeData = [
     bulletDamage: 10,
     health: 30,
   },
+  {
+    bulletDelay: 500,
+    bulletDamage: 20,
+    health: 40,
+  },
   //these are bonuses
   {
-    bulletDelay: 1000000,
+    bulletDelay: 10000,
     bulletDamage: 0,
     health: 1,
   },
   {
-    bulletDelay: 1000000,
+    bulletDelay: 10000,
     bulletDamage: 0,
     health: 1,
   },
 ];
+export const bonusMeshes = [4, 5];
+
 export const shadowTextureDim = { width: 512, height: 512 };
 export const viewSize = { width: 640, height: 480 };
 export const startingHealth = 100;
@@ -55,16 +62,19 @@ export const bulletDamage = 5;
 export const groundDamage = 0.1;
 export const bbScale = 0.9;
 export const wireframeTime = 250;
-export const bonusMeshes = [3, 4];
 export const levels: LevelData[] = [
   {
     waveIndices: [
-      [bonusMeshes[1]],
       [1],
       [1, 1],
       [1, 1, 1],
+      [2],
+      [1, 2, 1],
+      [bonusMeshes[0]],
       [1, 1, 1, 1],
       [1, 1, 1, 1, 2],
+      [2, 2, 2],
+      [3],
     ],
     audioIndex: 0,
     speed: 0.1,
@@ -73,13 +83,18 @@ export const levels: LevelData[] = [
   },
   {
     waveIndices: [
-      [1, 1],
-      [1, 1],
-      [1, 1],
+      [bonusMeshes[1]],
+      [2, 2],
+      [2, 1, 2],
+      [2, 3, 2],
+      [3, 3],
+      [bonusMeshes[0]],
+      [3, 3, 3, 3],
+      //
     ],
     audioIndex: 0,
-    speed: 0.1,
+    speed: 0.15,
     height: 1.2,
-    color: Green,
+    color: Ice,
   },
 ];

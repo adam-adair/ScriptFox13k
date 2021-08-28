@@ -5,8 +5,8 @@ import { levels, viewSize } from "./core/constants";
 import { Game } from "./core/engine";
 import { Level } from "./core/level";
 import { Purple, Yellow } from "./core/colors";
-import { generateSong } from "./music/generateSong";
-import { song1 } from "./music/song1";
+import { generateSong } from "./sound/generateSong";
+import { song1 } from "./sound/song1";
 import { Cube } from "./cube";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -16,26 +16,33 @@ let game: Game;
 
 // serialize obj to make them smaller, save to JSON:
 // import { JSONfromObjMtl } from "../meshUtil";
-// JSONfromObjMtl("./obj/enemy2.obj", "./obj/enemy2.mtl", 1);
+// JSONfromObjMtl("./obj/enemy3.obj", "./obj/enemy3.mtl", 1, {
+//   x: 0,
+//   y: -90,
+//   z: 0,
+// });
+
+// const s = generateSong(song1);
 
 const init = async () => {
   //initialize game
   game = new Game(canvas);
 
-  game.songs = [null]; //[generateSong(song1)];
+  game.songs = [null];
+  // game.songs = [s];
 
   //load some meshes
   game.meshes = await Promise.all([
     Mesh.fromSerialized("./models/player.json"),
     Mesh.fromSerialized("./models/enemy1.json"),
     Mesh.fromSerialized("./models/enemy2.json"),
+    Mesh.fromSerialized("./models/enemy3.json"),
   ]);
 
   game.meshes.push(new Cube(0.5, Yellow));
   game.meshes.push(new Cube(0.5, Purple));
 
   game.level = Level.generateLevel(game, levels[0]);
-
   // set up some objects
   game.player = new Player(game, 0);
   document.onkeydown = (ev) => handleInput(ev, true, game.player);

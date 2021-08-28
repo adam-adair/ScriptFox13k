@@ -74,7 +74,7 @@ export class Player extends GameObject {
       const rel = point.matrixTransform(inversePlayerMatrix);
       //check if bullet point is in player box
       if (this.mesh.pointIntersect(rel)) {
-        this.hit(bulletDamage);
+        this.hit(bullet.damage);
         bullet.destroy();
       }
     }
@@ -82,12 +82,17 @@ export class Player extends GameObject {
 
   fire() {
     let numBullets = 1;
-    let offsets = [0];
+    let offsets = [{ x: 0, y: 0 }];
     let powerBullet = 1;
     let bulletColor = [Red, White, Red, White];
     if (this.powerUps.includes("doubleGuns")) {
+      const x = Math.cos((this.rotation.z * Math.PI) / 180);
+      const y = Math.sin((this.rotation.z * Math.PI) / 180);
+      offsets = [
+        { x, y },
+        { x: -x, y: -y },
+      ];
       numBullets = 2;
-      offsets = [-1, 1];
       bulletColor = [Yellow, White, Yellow, White];
     }
     if (this.powerUps.includes("powerBullet")) {
@@ -101,9 +106,10 @@ export class Player extends GameObject {
         powerBullet,
         powerBullet * 5
       );
+
       bullet.translate(
-        this.position.x + offsets[i],
-        this.position.y,
+        this.position.x + offsets[i].x,
+        this.position.y + offsets[i].y,
         this.position.z + this.mesh.boundingBox.flt.z - 0.1
       );
       this.game.bullets.push(bullet);
