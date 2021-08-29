@@ -6,7 +6,7 @@ import { Game } from "./core/engine";
 import { Level } from "./core/level";
 import { Purple, Yellow } from "./core/colors";
 import { generateSong } from "./sound/generateSong";
-import { song1 } from "./sound/song1";
+import { processSong, rlDecode } from "../rlEncode";
 import { Cube } from "./cube";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -22,11 +22,19 @@ let game: Game;
 //   z: 0,
 // });
 
+// encode song json to make smaller as well
+// import { rlEncode } from "../rlEncode";
+// import { song1 } from "./sound/song1";
+// console.log(JSON.stringify(processSong(song1, rlEncode)));
 // const s = generateSong(song1);
 
 const init = async () => {
   //initialize game
   game = new Game(canvas);
+
+  const res = await fetch("./music/song1.json");
+  const encodedJson = await res.json();
+  const song1 = generateSong(processSong(encodedJson, rlDecode));
 
   game.songs = [null];
   // game.songs = [s];
