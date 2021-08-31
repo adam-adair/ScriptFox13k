@@ -3,18 +3,39 @@
   <head>
     <title>Document</title>
     <style>
-      html,
       body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        height: 100%;
+        background-color: white;
+      }
+      #container {
+        position: relative;
+      }
+      #container canvas,
+      #overlay {
+        position: absolute;
+      }
+      #overlay {
+        width: 640px;
+        height: 480px;
+        background-color: black;
+        display: flex;
+      }
+      #instructions {
+        color: white;
+        margin: auto;
       }
     </style>
   </head>
   <body>
-    <canvas id="canvas"></canvas>
-    <p id="playerHealth"></p>
+    <div id="container">
+      <canvas id="canvas"></canvas>
+      <div id="overlay">
+        <span id="instructions">
+          <h1>SPACE</h1>
+          <p>Press Space to Begin</p>
+        </span>
+      </div>
+      <p id="playerHealth"></p>
+    </div>
     <script src="./dist/bundle.js"></script>
   </body>
 </html>

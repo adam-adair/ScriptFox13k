@@ -53,6 +53,7 @@ export class GameObject {
     );
   }
   hit(damage: number) {
+    this.game.songs[0].play();
     this.wireframe = true;
     this.health -= damage;
   }

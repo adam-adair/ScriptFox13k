@@ -176,9 +176,7 @@ export class Mesh {
     };
   }
 
-  static async fromSerialized(url: string): Promise<Mesh> {
-    const res = await fetch(url);
-    const obj = await res.json();
+  static fromSerialized(obj: { v: number[]; f: number[]; c: number[] }): Mesh {
     const vertices: Vertex[] = [];
     const faces: Face[] = [];
     // for serialized mesh
