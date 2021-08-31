@@ -6,7 +6,7 @@
   "scripts": {
     "build:dev": "webpack --watch --mode development",
     "build": "webpack --mode production",
-    "build:mini": "npm run build & advzip -a game.zip index.html dist/* models/* music/* -4 & node printSize"
+    "build:mini": "npm run build & advzip -a game.zip index.html dist/* -4 & node printSize"
   },
   "author": "",
   "license": "ISC",
