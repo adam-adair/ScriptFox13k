@@ -1,4 +1,5 @@
 import { Player } from "../gameObjects/player";
+import { Game } from "./engine";
 
 export class GameInput {
   up = false;
@@ -16,8 +17,9 @@ export class GameInput {
 export const handleInput = (
   ev: KeyboardEvent,
   pressed: boolean,
-  player: Player
+  game: Game
 ) => {
+  const { player } = game;
   switch (ev.key.toLowerCase()) {
     case "w":
       player.gameInput.up = pressed;
@@ -50,5 +52,7 @@ export const handleInput = (
       player.gameInput.fire = pressed;
       ev.preventDefault();
       break;
+    case "p":
+      if (!pressed) game.togglePause();
   }
 };

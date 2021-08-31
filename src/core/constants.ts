@@ -52,12 +52,18 @@ export const enemyTypeData = [
     bulletDamage: 0,
     health: 1,
   },
+  {
+    bulletDelay: 10000,
+    bulletDamage: 0,
+    health: 1,
+  },
 ];
-export const bonusMeshes = [4, 5];
+export const bonusMeshes = [4, 5, 6];
+export const bonusTypes = ["doubleGuns", "powerBullet", "health50"];
 
 export const shadowTextureDim = { width: 512, height: 512 };
 export const viewSize = { width: 640, height: 480 };
-export const startingHealth = 100;
+export const startingHealth = 500;
 export const bulletDamage = 5;
 export const groundDamage = 0.1;
 export const bbScale = 0.9;
@@ -75,6 +81,15 @@ export const levels: LevelData[] = [
       [1, 1, 1, 1, 2],
       [2, 2, 2],
       [3],
+      [bonusMeshes[1]],
+      [2, 2],
+      [2, 1, 2],
+      [2, 3, 2],
+      [3, 3],
+      [3, 2, 2, 3],
+      [bonusMeshes[2]],
+      [3, 3, 3],
+      [3, 3, 3, 3],
     ],
     audioIndex: 0,
     speed: 0.1,
@@ -88,7 +103,6 @@ export const levels: LevelData[] = [
       [2, 1, 2],
       [2, 3, 2],
       [3, 3],
-      [bonusMeshes[0]],
       [3, 3, 3, 3],
       //
     ],

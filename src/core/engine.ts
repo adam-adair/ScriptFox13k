@@ -13,6 +13,8 @@ import { Player } from "../gameObjects/player";
 import { Bullet } from "../gameObjects/bullet";
 import { Matrix, Mesh } from "./mesh";
 import { Level } from "./level";
+import { loop } from "..";
+const overlay = document.getElementById("overlay");
 
 export class Game {
   canvas: HTMLCanvasElement;
@@ -23,18 +25,20 @@ export class Game {
   shadowDepthTexture: WebGLTexture;
   samplerUniform: WebGLUniformLocation;
   meshes: Mesh[];
-  songs: HTMLAudioElement[];
+  sounds: HTMLAudioElement[];
   player: Player;
   bullets: Bullet[];
   level: Level;
   lastTime: number;
   time: number;
   currentLevel: number;
+  paused: boolean;
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.currentLevel = 0;
     this.gl = canvas.getContext("webgl");
     this.bullets = [];
+    this.paused = false;
     const { gl } = this;
     //set background color, enable depth
     gl.clearDepth(1.0);
@@ -272,6 +276,20 @@ export class Game {
       this.player.powerUps = [];
       this.currentLevel++;
       this.level = Level.generateLevel(this, levels[this.currentLevel]);
+    }
+  }
+
+  togglePause() {
+    this.paused = !this.paused;
+    if (this.paused) {
+      overlay.innerHTML = "";
+      overlay.style.opacity = "50%";
+      this.sounds[0].pause();
+    } else {
+      // overlay.style.visibility = "hidden";
+      overlay.style.opacity = "0%";
+      this.sounds[0].play();
+      requestAnimationFrame(loop);
     }
   }
 }

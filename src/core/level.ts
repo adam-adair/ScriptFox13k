@@ -57,7 +57,7 @@ export class Level {
       game,
       waves,
       new Landscape(game, height, speed, color),
-      game.songs[audioIndex]
+      game.sounds[audioIndex]
     );
   }
   update() {

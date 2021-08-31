@@ -128,4 +128,8 @@ export class Player extends GameObject {
       return this.fire();
     }
   }
+  hit(damage: number) {
+    this.game.sounds[1].play();
+    super.hit(damage);
+  }
 }

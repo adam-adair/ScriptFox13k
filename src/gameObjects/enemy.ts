@@ -71,6 +71,7 @@ export class Enemy extends GameObject {
     this.move();
   }
   destroy() {
+    this.game.sounds[3].play();
     const { enemyWaves, currentWave } = this.game.level;
     const ix = enemyWaves[currentWave].indexOf(this);
     enemyWaves[currentWave].splice(ix, 1);
@@ -88,5 +89,9 @@ export class Enemy extends GameObject {
     if (this.enemyType === 2) {
       this.rotate(0, 0, -3);
     }
+  }
+  hit(damage: number) {
+    this.game.sounds[2].play();
+    super.hit(damage);
   }
 }

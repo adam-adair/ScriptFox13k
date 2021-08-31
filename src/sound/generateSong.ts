@@ -2,6 +2,7 @@ import { CPlayer } from "./player-small";
 
 export const generateSong = async (
   song: Song,
+  loop = false,
   disp?: HTMLElement
 ): Promise<HTMLAudioElement> => {
   return new Promise((resolve) => {
@@ -17,7 +18,6 @@ export const generateSong = async (
 
       if (disp) {
         disp.innerHTML = `<p>Loading Audio...${(pct * 100).toFixed(2)}%</p>`;
-        console.log(pct);
       }
 
       if (done) {
@@ -26,7 +26,7 @@ export const generateSong = async (
         audio.src = URL.createObjectURL(
           new Blob([wave], { type: "audio/wav" })
         );
-        audio.loop = false;
+        audio.loop = loop;
         resolve(audio);
         clearInterval(gen);
       }
