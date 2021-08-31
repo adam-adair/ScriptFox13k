@@ -89,6 +89,9 @@ export class Enemy extends GameObject {
     if (this.enemyType === 2) {
       this.rotate(0, 0, -3);
     }
+    if (this.enemyType === 5) {
+      this.rotate(0, 0, 4);
+    }
   }
   hit(damage: number) {
     this.game.sounds[2].play();

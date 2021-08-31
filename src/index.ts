@@ -14,6 +14,8 @@ import { pmesh } from "./models/player";
 import { e1mesh } from "./models/enemy1";
 import { e2mesh } from "./models/enemy2";
 import { e3mesh } from "./models/enemy3";
+import { e4mesh } from "./models/enemy4";
+import { e5mesh } from "./models/enemy5";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const playerHealth = document.getElementById("playerHealth");
@@ -24,7 +26,7 @@ let game: Game;
 let sounds: HTMLAudioElement[];
 // serialize obj to make them smaller, save to JSON:
 // import { JSONfromObjMtl } from "../meshUtil";
-// JSONfromObjMtl("./obj/enemy3.obj", "./obj/enemy3.mtl", 1, {
+// JSONfromObjMtl("./obj/enemy6.obj", "./obj/enemy6.mtl", 1, {
 //   x: 0,
 //   y: -90,
 //   z: 0,
@@ -49,6 +51,8 @@ const init = async () => {
     Mesh.fromSerialized(e1mesh),
     Mesh.fromSerialized(e2mesh),
     Mesh.fromSerialized(e3mesh),
+    Mesh.fromSerialized(e4mesh),
+    Mesh.fromSerialized(e5mesh),
   ];
   game.meshes.push(new Cube(0.5, Yellow));
   game.meshes.push(new Cube(0.5, Purple));

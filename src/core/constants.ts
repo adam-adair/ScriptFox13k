@@ -38,8 +38,18 @@ export const enemyTypeData = [
   },
   {
     bulletDelay: 500,
-    bulletDamage: 20,
+    bulletDamage: 15,
     health: 40,
+  },
+  {
+    bulletDelay: 500,
+    bulletDamage: 20,
+    health: 50,
+  },
+  {
+    bulletDelay: 400,
+    bulletDamage: 25,
+    health: 60,
   },
   //these are bonuses
   {
@@ -58,7 +68,7 @@ export const enemyTypeData = [
     health: 1,
   },
 ];
-export const bonusMeshes = [4, 5, 6];
+export const bonusMeshes = [6, 7, 8];
 export const bonusTypes = ["doubleGuns", "powerBullet", "health50"];
 
 export const shadowTextureDim = { width: 512, height: 512 };
@@ -70,7 +80,10 @@ export const bbScale = 0.9;
 export const wireframeTime = 250;
 export const levels: LevelData[] = [
   {
+    //level 1
     waveIndices: [
+      // [6, 7, 8],
+      [1, 2, 3, 4, 5],
       [1],
       [1, 1],
       [1, 1, 1],
@@ -84,12 +97,14 @@ export const levels: LevelData[] = [
       [bonusMeshes[1]],
       [2, 2],
       [2, 1, 2],
-      [2, 3, 2],
+      [1, 3, 1],
       [3, 3],
       [3, 2, 2, 3],
       [bonusMeshes[2]],
       [3, 3, 3],
       [3, 3, 3, 3],
+      [2, 2, 2, 2, 3],
+      [4],
     ],
     audioIndex: 0,
     speed: 0.1,
@@ -97,15 +112,16 @@ export const levels: LevelData[] = [
     color: Green,
   },
   {
-    waveIndices: [
-      [bonusMeshes[1]],
-      [2, 2],
-      [2, 1, 2],
-      [2, 3, 2],
-      [3, 3],
-      [3, 3, 3, 3],
-      //
-    ],
+    //level 2
+    waveIndices: [],
+    audioIndex: 0,
+    speed: 0.15,
+    height: 1.2,
+    color: Ice,
+  },
+  {
+    //level 3
+    waveIndices: [],
     audioIndex: 0,
     speed: 0.15,
     height: 1.2,
