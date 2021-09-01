@@ -37,7 +37,7 @@ export class Level {
         const e =
           w[j] >= bonusMeshes[0]
             ? new Bonus(game, w[j])
-            : new Enemy(game, w[j]);
+            : new Enemy(game, w[j], w.length, j);
         if (w.length >= 4) {
           j === 4
             ? (e.initialPos = [0, 1.5])

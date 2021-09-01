@@ -83,7 +83,7 @@ export const levels: LevelData[] = [
     //level 1
     waveIndices: [
       // [6, 7, 8],
-      [1, 2, 3, 4, 5],
+      // [1, 2, 3, 4, 5],
       [1],
       [1, 1],
       [1, 1, 1],
@@ -104,7 +104,7 @@ export const levels: LevelData[] = [
       [3, 3, 3],
       [3, 3, 3, 3],
       [2, 2, 2, 2, 3],
-      [4],
+      [5],
     ],
     audioIndex: 0,
     speed: 0.1,
@@ -113,7 +113,7 @@ export const levels: LevelData[] = [
   },
   {
     //level 2
-    waveIndices: [],
+    waveIndices: [[1]],
     audioIndex: 0,
     speed: 0.15,
     height: 1.2,
@@ -121,10 +121,39 @@ export const levels: LevelData[] = [
   },
   {
     //level 3
-    waveIndices: [],
+    waveIndices: [[1]],
     audioIndex: 0,
     speed: 0.15,
     height: 1.2,
     color: Ice,
   },
+];
+export const enemyLimits: [number, number][][] = [
+  //wave size = 0,
+  [[0, 0]],
+  //wave size = 1
+  [[0, 3.5]],
+  //size = 2
+  [
+    [0, 3.5],
+    [0, 3.5],
+  ],
+  [
+    [0, 3.5],
+    [0, 3.5],
+    [0, 3.5],
+  ],
+  [
+    [4.5, -1],
+    [0, 3.0],
+    [0, 3.0],
+    [-1, 4.5],
+  ],
+  [
+    [4.5, -1],
+    [0, 3.0],
+    [0, 3.0],
+    [-1, 4.5],
+    [0, 0],
+  ],
 ];

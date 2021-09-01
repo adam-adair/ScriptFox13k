@@ -10,7 +10,7 @@ import { Enemy } from "./enemy";
 export class Bonus extends Enemy {
   bonusType: string;
   constructor(game: Game, meshIndex: number) {
-    super(game, meshIndex);
+    super(game, meshIndex, 0, 0);
     this.translate(-4 + Math.random() * 8, 0, -50);
     this.rotate(45, 45, 0);
     this.bonusType = bonusTypes[bonusMeshes.indexOf(meshIndex)];

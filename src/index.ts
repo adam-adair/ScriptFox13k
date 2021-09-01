@@ -26,7 +26,7 @@ let game: Game;
 let sounds: HTMLAudioElement[];
 // serialize obj to make them smaller, save to JSON:
 // import { JSONfromObjMtl } from "../meshUtil";
-// JSONfromObjMtl("./obj/enemy6.obj", "./obj/enemy6.mtl", 1, {
+// JSONfromObjMtl("./obj/enemy5.obj", "./obj/enemy5.mtl", 1, {
 //   x: 0,
 //   y: -90,
 //   z: 0,
@@ -80,8 +80,8 @@ window.onload = () => {
   canvas.height = viewSize.height;
   document.onkeyup = async (ev) => {
     ev.preventDefault();
-    document.onkeyup = null;
     if (ev.key.toLowerCase() === "p") {
+      document.onkeyup = null;
       await loadSounds();
       overlay.style.opacity = "0%";
       init();
@@ -92,8 +92,8 @@ window.onload = () => {
 const loadSounds = async () => {
   instructions.innerHTML = `<p>Loading Audio...0%</p>`;
   sounds = [
-    await generateSong(processSong(song1, rlDecode), true, instructions),
-    // await generateSong(hitSound),
+    // await generateSong(processSong(song1, rlDecode), true, instructions),
+    await generateSong(hitSound),
     await generateSong(hitSound),
     await generateSong(hitSound2),
     await generateSong(dieSound),
