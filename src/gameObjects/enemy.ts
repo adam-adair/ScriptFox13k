@@ -4,6 +4,7 @@ import { enemyLimits, enemyTypeData } from "../core/constants";
 import { Game } from "../core/engine";
 import { GameObject } from "../core/gameObject";
 
+const playerScore = document.getElementById("playerScore");
 export class Enemy extends GameObject {
   initialPos: number[];
   reachedStart: boolean;
@@ -88,7 +89,6 @@ export class Enemy extends GameObject {
     }
     if (this.health <= 0) this.destroy();
     //move enemy based on type
-
     this.move();
   }
   destroy() {
@@ -96,6 +96,9 @@ export class Enemy extends GameObject {
     const { enemyWaves, currentWave } = this.game.level;
     const ix = enemyWaves[currentWave].indexOf(this);
     enemyWaves[currentWave].splice(ix, 1);
+    const addlScore = enemyTypeData[this.enemyType].health;
+    this.game.score += addlScore > 1 ? addlScore : 0;
+    playerScore.innerHTML = `Score: ${this.game.score}`;
   }
   moveToStart() {
     this.translate(0, -0.2, 0);

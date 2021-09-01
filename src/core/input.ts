@@ -53,6 +53,9 @@ export const handleInput = (
       ev.preventDefault();
       break;
     case "p":
-      if (!pressed) game.togglePause();
+      ev.preventDefault();
+      if (player.health <= 0 && !pressed) game.restart();
+      else if (!pressed) game.togglePause();
+      break;
   }
 };

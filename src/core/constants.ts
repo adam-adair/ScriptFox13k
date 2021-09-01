@@ -1,4 +1,4 @@
-import { Blue, Green, Ice } from "./colors";
+import { Green, Ice } from "./colors";
 import { LevelData } from "./level";
 
 export const clearColor = { r: 0, g: 0.2, b: 0.2, a: 1 };

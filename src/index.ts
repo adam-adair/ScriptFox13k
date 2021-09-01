@@ -92,8 +92,8 @@ window.onload = () => {
 const loadSounds = async () => {
   instructions.innerHTML = `<p>Loading Audio...0%</p>`;
   sounds = [
-    // await generateSong(processSong(song1, rlDecode), true, instructions),
-    await generateSong(hitSound),
+    await generateSong(processSong(song1, rlDecode), true, instructions),
+    // await generateSong(hitSound),
     await generateSong(hitSound),
     await generateSong(hitSound2),
     await generateSong(dieSound),

@@ -134,6 +134,8 @@ export class Player extends GameObject {
     if (this.health <= 0) this.die();
   }
   die() {
-    console.log("you're dead");
+    this.game.togglePause(
+      `<span id="instructions">You died! Press P to restart.</span>`
+    );
   }
 }

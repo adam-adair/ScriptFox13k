@@ -16,6 +16,7 @@ import { Matrix, Mesh } from "./mesh";
 import { Level } from "./level";
 import { loop } from "..";
 const overlay = document.getElementById("overlay");
+const playerScore = document.getElementById("playerScore");
 
 export class Game {
   canvas: HTMLCanvasElement;
@@ -34,9 +35,11 @@ export class Game {
   time: number;
   currentLevel: number;
   paused: boolean;
+  score: number;
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.currentLevel = 0;
+    this.score = 0;
     this.gl = canvas.getContext("webgl");
     this.bullets = [];
     this.paused = false;
@@ -280,10 +283,10 @@ export class Game {
     this.level = Level.generateLevel(this, levels[this.currentLevel]);
   }
 
-  togglePause() {
+  togglePause(text = "") {
     this.paused = !this.paused;
     if (this.paused) {
-      overlay.innerHTML = "";
+      overlay.innerHTML = text;
       overlay.style.opacity = "50%";
       this.sounds[0].pause();
     } else {
@@ -292,5 +295,15 @@ export class Game {
       this.sounds[0].play();
       requestAnimationFrame(loop);
     }
+  }
+
+  restart() {
+    this.level = Level.generateLevel(this, levels[this.currentLevel]);
+    this.currentLevel = -1;
+    this.bullets = [];
+    this.score = 0;
+    playerScore.innerHTML = `Score: ${this.score}`;
+    this.nextLevel();
+    this.togglePause();
   }
 }
