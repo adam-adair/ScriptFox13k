@@ -131,5 +131,9 @@ export class Player extends GameObject {
   hit(damage: number) {
     this.game.sounds[1].play();
     super.hit(damage);
+    if (this.health <= 0) this.die();
+  }
+  die() {
+    console.log("you're dead");
   }
 }

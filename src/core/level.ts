@@ -10,25 +10,14 @@ export class Level {
   enemyWaves: Enemy[][];
   currentWave: number;
   landscape: Landscape;
-  audio: HTMLAudioElement;
-  constructor(
-    game: Game,
-    enemyWaves: Enemy[][],
-    landscape: Landscape,
-    audio: HTMLAudioElement
-  ) {
+  constructor(game: Game, enemyWaves: Enemy[][], landscape: Landscape) {
     this.currentWave = 0;
     this.game = game;
     this.enemyWaves = enemyWaves;
     this.landscape = landscape;
-    this.audio = audio;
   }
-  start() {
-    this.audio.play();
-  }
-
   static generateLevel(game: Game, levelData: LevelData): Level {
-    const { waveIndices, audioIndex, speed, height, color } = levelData;
+    const { waveIndices, speed, height, color } = levelData;
     const waves = [];
     for (let i = 0; i < waveIndices.length; i++) {
       const wave: Enemy[] = [];
@@ -53,13 +42,37 @@ export class Level {
       }
       waves.push(wave);
     }
-    return new Level(
-      game,
-      waves,
-      new Landscape(game, height, speed, color),
-      game.sounds[audioIndex]
-    );
+    return new Level(game, waves, new Landscape(game, height, speed, color));
   }
+
+  static generateRandomLevel(): LevelData {
+    const waveIndices: number[][] = [];
+    for (let i = 0; i < 20; i++) {
+      if (i % 5 === 0) {
+        const bonusIx = Math.floor(Math.random() * bonusMeshes.length);
+        waveIndices.push([bonusMeshes[bonusIx]]);
+      } else {
+        const waveSize = 1 + Math.floor(Math.random() * 5);
+        const newWave: number[] = [];
+        for (let j = 0; j < waveSize; j++) {
+          const randomEnemy = 1 + Math.floor(Math.random() * 5);
+          newWave.push(randomEnemy);
+        }
+        waveIndices.push(newWave);
+      }
+    }
+    return {
+      waveIndices,
+      speed: Math.random() * 0.25 + 0.1,
+      height: Math.random() * 1.6 + 0.4,
+      color: new Color(
+        Math.random() * 0.5 + 0.5,
+        Math.random() * 0.5 + 0.5,
+        Math.random() * 0.5 + 0.5
+      ),
+    };
+  }
+
   update() {
     //if no more enemies in this wave
     if (this.enemyWaves[this.currentWave].length === 0) {
@@ -75,7 +88,6 @@ export class Level {
 
 export interface LevelData {
   waveIndices: number[][];
-  audioIndex: number;
   speed: number;
   height: number;
   color: Color;

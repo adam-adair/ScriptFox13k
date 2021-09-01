@@ -7,6 +7,7 @@ import {
   shadowTextureDim,
   viewSize,
   levels,
+  startingHealth,
 } from "./constants";
 import { perspective, orthogonal } from "./camera";
 import { Player } from "../gameObjects/player";
@@ -269,14 +270,14 @@ export class Game {
     level.update();
   }
   nextLevel() {
-    // todo something when you win
-    if (this.currentLevel + 1 === levels.length) console.log("Won");
-    else {
-      // todo something to change levels, audio
-      this.player.powerUps = [];
-      this.currentLevel++;
-      this.level = Level.generateLevel(this, levels[this.currentLevel]);
+    this.player.powerUps = [];
+    this.player.health = startingHealth;
+    this.currentLevel++;
+    if (this.currentLevel === levels.length) {
+      const newLevel = Level.generateRandomLevel();
+      levels.push(newLevel);
     }
+    this.level = Level.generateLevel(this, levels[this.currentLevel]);
   }
 
   togglePause() {
